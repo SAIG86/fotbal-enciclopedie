@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ro">
 <head>
@@ -5,169 +6,689 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>⚔️ Eternul Derby — FCSB vs Dinamo</title>
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&display=swap');
+  
   :root {
-    --bg: #080810;
-    --card: #0f0f1a;
-    --border: #1e1e30;
-    --text: #e8e8f0;
-    --sub: #888;
+    --bg: #0a0a0a;
+    --card: #141414;
+    --border: rgba(255,255,255,0.1);
+    --text: #ffffff;
+    --sub: #a1a1aa;
+    --muted: #71717a;
     --fcsb-red: #DA2928;
     --fcsb-blue: #0046AE;
     --dinamo-red: #C8001A;
-    --gold: #FFD700;
+    --dinamo-white: #FFFFFF;
   }
+  
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  body { font-family: 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
+  
+  body { 
+    font-family: 'Barlow Condensed', -apple-system, BlinkMacSystemFont, sans-serif; 
+    background: var(--bg); 
+    color: var(--text); 
+    overflow-x: hidden;
+    line-height: 1.5;
+  }
 
   /* ───── HEADER ───── */
   #header {
-    background: linear-gradient(180deg, #0a0a18 0%, #080810 100%);
-    padding: 14px 12px 0;
-    position: sticky; top: 0; z-index: 100;
-    border-bottom: 2px solid var(--active-color, #DA2928);
-    transition: border-color .4s;
+    background: rgba(0,0,0,0.9);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 16px;
+    position: sticky; 
+    top: 0; 
+    z-index: 100;
+    border-bottom: 1px solid var(--border);
   }
-  .team-switcher { display: flex; gap: 8px; margin-bottom: 12px; }
+  
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  
+  .logo {
+    font-size: 24px;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    text-transform: uppercase;
+  }
+  
+  .date-badge {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+  
+  .team-switcher { 
+    display: flex; 
+    gap: 12px; 
+    margin-bottom: 16px; 
+  }
+  
   .team-btn {
-    flex: 1; padding: 13px 6px; border-radius: 12px; border: 2px solid transparent;
-    font-weight: 900; font-size: 15px; cursor: pointer; letter-spacing: .5px;
-    text-transform: uppercase; transition: all .3s;
+    flex: 1; 
+    padding: 14px 8px; 
+    border-radius: 10px; 
+    border: none;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800; 
+    font-size: 16px; 
+    cursor: pointer; 
+    letter-spacing: 1px;
+    text-transform: uppercase; 
+    transition: all .3s ease;
   }
-  .fcsb-btn { background: linear-gradient(135deg, #DA2928 0%, #0046AE 100%); color: #fff; }
-  .dinamo-btn { background: transparent; color: #C8001A; border-color: #C8001A; }
-  .fcsb-btn.active { box-shadow: 0 0 20px rgba(218,41,40,.5); transform: scale(1.03); outline: 2px solid #fff; }
-  .dinamo-btn.active { background: #C8001A; color: #fff; box-shadow: 0 0 20px rgba(200,0,26,.5); transform: scale(1.03); outline: 2px solid #fff; }
+  
+  .fcsb-btn { 
+    background: linear-gradient(135deg, var(--fcsb-red) 0%, var(--fcsb-blue) 100%); 
+    color: #fff; 
+  }
+  
+  .dinamo-btn { 
+    background: #1a1a1a; 
+    color: var(--dinamo-red); 
+    border: 2px solid var(--dinamo-red); 
+  }
+  
+  .fcsb-btn.active { 
+    box-shadow: 0 0 30px rgba(218,41,40,0.5); 
+    transform: scale(1.02); 
+  }
+  
+  .dinamo-btn.active { 
+    background: var(--dinamo-red); 
+    color: #fff; 
+    box-shadow: 0 0 30px rgba(200,0,26,0.5); 
+    transform: scale(1.02); 
+  }
 
-  #tabs { display: flex; overflow-x: auto; gap: 6px; padding-bottom: 10px; scrollbar-width: none; }
-  #tabs::-webkit-scrollbar { display: none; }
-  .tab {
-    white-space: nowrap; padding: 9px 16px; border-radius: 20px;
-    background: #151525; color: #666; border: 1px solid #222;
-    font-weight: 700; font-size: 12px; cursor: pointer; transition: all .25s;
+  #tabs { 
+    display: flex; 
+    overflow-x: auto; 
+    gap: 8px; 
+    padding-bottom: 4px; 
+    scrollbar-width: none; 
   }
-  .tab.on { color: #fff; border-color: transparent; }
+  
+  #tabs::-webkit-scrollbar { display: none; }
+  
+  .tab {
+    white-space: nowrap; 
+    padding: 10px 18px; 
+    border-radius: 8px;
+    background: #1a1a1a; 
+    color: var(--muted); 
+    border: 1px solid var(--border);
+    font-weight: 700; 
+    font-size: 13px; 
+    cursor: pointer; 
+    transition: all .25s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .tab.on { 
+    color: #fff; 
+    border-color: transparent; 
+  }
 
   /* ───── CONTENT ───── */
-  #content { padding: 14px; }
+  #content { 
+    padding: 16px; 
+    max-width: 1200px;
+    margin: 0 auto;
+  }
 
   /* ───── CARDS ───── */
   .card {
-    background: var(--card); border-radius: 14px; padding: 15px;
-    margin-bottom: 14px; border: 1px solid var(--border);
+    background: var(--card); 
+    border-radius: 12px; 
+    padding: 20px;
+    margin-bottom: 16px; 
+    border: 1px solid var(--border);
+    transition: border-color 0.3s;
   }
-  .card-title { font-size: 13px; color: var(--sub); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
-  .section-title { font-size: 18px; font-weight: 900; margin-bottom: 14px; }
-
-  /* ───── BADGE BANNER ───── */
-  .season-banner {
-    border-radius: 14px; padding: 14px 16px; margin-bottom: 14px;
-    display: flex; align-items: center; gap: 12px;
+  
+  .card:hover {
+    border-color: rgba(255,255,255,0.2);
   }
-  .banner-icon { font-size: 32px; }
-  .banner-text { font-size: 13px; line-height: 1.5; }
-  .banner-text strong { font-size: 15px; display: block; }
+  
+  .card-title { 
+    font-size: 11px; 
+    color: var(--muted); 
+    text-transform: uppercase; 
+    letter-spacing: 2px; 
+    margin-bottom: 16px;
+    font-weight: 700;
+  }
+  
+  .section-title { 
+    font-size: 24px; 
+    font-weight: 900; 
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: -0.5px;
+  }
 
-  /* ───── STAT ROW ───── */
-  .stat-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
-  .stat-row:last-child { border-bottom: none; }
-  .stat-badge { font-weight: 900; font-size: 15px; background: #1a1a2e; padding: 4px 10px; border-radius: 8px; }
+  /* ───── TEAM HERO ───── */
+  .team-hero {
+    text-align: center;
+    padding: 30px 20px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .team-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0.15;
+    z-index: 0;
+  }
+  
+  .team-hero > * {
+    position: relative;
+    z-index: 1;
+  }
+  
+  .team-name {
+    font-size: 36px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+  }
+  
+  .team-info {
+    font-size: 14px;
+    color: var(--sub);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 12px;
+  }
+
+  /* ───── STATUS BANNER ───── */
+  .status-banner {
+    border-radius: 12px; 
+    padding: 16px 20px; 
+    margin-bottom: 16px;
+    display: flex; 
+    align-items: center; 
+    gap: 16px;
+    border-left: 4px solid;
+  }
+  
+  .banner-icon { font-size: 36px; }
+  
+  .banner-text { flex: 1; }
+  
+  .banner-title {
+    font-size: 18px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .banner-sub {
+    font-size: 14px;
+    color: var(--sub);
+    margin-top: 4px;
+  }
+  
+  .banner-note {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 8px;
+    line-height: 1.6;
+  }
 
   /* ───── H2H SCOREBOARD ───── */
   .h2h-box {
-    display: grid; grid-template-columns: 1fr auto 1fr;
-    align-items: center; gap: 8px; text-align: center; padding: 14px 0;
+    display: grid; 
+    grid-template-columns: 1fr 1fr 1fr;
+    align-items: center; 
+    gap: 8px; 
+    text-align: center; 
+    padding: 20px 0;
   }
-  .h2h-score { font-size: 40px; font-weight: 900; }
-  .h2h-label { font-size: 11px; color: var(--sub); text-transform: uppercase; letter-spacing: .8px; margin-top: 4px; }
-  .h2h-sep { font-size: 24px; color: var(--sub); }
+  
+  .h2h-score { 
+    font-size: 48px; 
+    font-weight: 900;
+    letter-spacing: -2px;
+  }
+  
+  .h2h-label { 
+    font-size: 10px; 
+    color: var(--muted); 
+    text-transform: uppercase; 
+    letter-spacing: 1px; 
+    margin-top: 4px;
+    font-weight: 700;
+  }
 
   /* ───── PROGRESS BAR ───── */
-  .bar-wrap { height: 10px; background: #1a1a2e; border-radius: 5px; overflow: hidden; margin: 8px 0; }
-  .bar-fill { height: 100%; border-radius: 5px; transition: width 1s; }
+  .bar-wrap { 
+    height: 12px; 
+    background: #1a1a1a; 
+    border-radius: 6px; 
+    overflow: hidden; 
+    margin: 12px 0;
+    display: flex;
+  }
+  
+  .bar-fill { 
+    height: 100%;
+    transition: width 1s ease-out; 
+  }
+  
+  .bar-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 8px;
+  }
+
+  /* ───── STAT ROW ───── */
+  .stat-row { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    padding: 12px 0; 
+    border-bottom: 1px solid var(--border); 
+  }
+  
+  .stat-row:last-child { border-bottom: none; }
+  
+  .stat-badge { 
+    font-weight: 800; 
+    font-size: 14px; 
+    background: #1a1a1a; 
+    padding: 6px 12px; 
+    border-radius: 6px;
+  }
 
   /* ───── MATCH CARD ───── */
   .match-card {
-    background: #0d0d1e; border-radius: 12px; padding: 12px 14px;
-    margin-bottom: 10px; border-left: 3px solid;
+    background: #0d0d12; 
+    border-radius: 10px; 
+    padding: 16px;
+    margin-bottom: 12px; 
+    border-left: 4px solid;
   }
-  .match-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
-  .match-competition { font-size: 10px; color: var(--sub); text-transform: uppercase; letter-spacing: .8px; }
-  .match-date { font-size: 11px; color: var(--sub); }
-  .match-score { font-size: 16px; font-weight: 900; text-align: center; margin: 6px 0; }
-  .match-note { font-size: 11px; color: #777; }
-
-  /* ───── RECORD CARD ───── */
-  .record-item { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
-  .record-emoji { font-size: 24px; flex-shrink: 0; }
-  .record-text { flex: 1; }
-  .record-title { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
-  .record-val { font-size: 12px; color: var(--sub); }
+  
+  .match-top { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 8px; 
+  }
+  
+  .match-competition { 
+    font-size: 10px; 
+    color: var(--muted); 
+    text-transform: uppercase; 
+    letter-spacing: 1px;
+    font-weight: 700;
+  }
+  
+  .match-date { 
+    font-size: 12px; 
+    color: var(--sub); 
+  }
+  
+  .match-score { 
+    font-size: 20px; 
+    font-weight: 900; 
+    text-align: center; 
+    margin: 8px 0;
+    letter-spacing: -0.5px;
+  }
+  
+  .match-note { 
+    font-size: 12px; 
+    color: var(--muted);
+    text-align: center;
+  }
 
   /* ───── PLAYER CARD ───── */
-  .player-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .player-card {
-    background: #0d0d1e; border-radius: 10px; padding: 10px 12px;
-    border-left: 3px solid;
+  .player-grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+    gap: 12px; 
   }
-  .player-pos { font-size: 10px; color: var(--sub); text-transform: uppercase; letter-spacing: .5px; }
-  .player-name { font-size: 13px; font-weight: 700; margin-top: 3px; }
-  .player-detail { font-size: 11px; color: var(--sub); margin-top: 2px; }
+  
+  .player-card {
+    background: #0d0d12; 
+    border-radius: 10px; 
+    padding: 16px;
+    border-left: 4px solid;
+    transition: transform 0.2s;
+  }
+  
+  .player-card:hover {
+    transform: translateX(4px);
+  }
+  
+  .player-pos { 
+    font-size: 10px; 
+    color: var(--muted); 
+    text-transform: uppercase; 
+    letter-spacing: 1px;
+    font-weight: 700;
+  }
+  
+  .player-name { 
+    font-size: 16px; 
+    font-weight: 800; 
+    margin-top: 4px;
+  }
+  
+  .player-detail { 
+    font-size: 13px; 
+    color: var(--sub); 
+    margin-top: 4px; 
+  }
+  
+  .player-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+  }
+  
+  .player-stat-value {
+    font-size: 18px;
+    font-weight: 900;
+  }
+  
+  .player-stat-label {
+    font-size: 9px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 2px;
+  }
 
-  /* ───── TIMELINE ───── */
-  .timeline { position: relative; padding-left: 20px; }
-  .timeline::before { content: ''; position: absolute; left: 7px; top: 0; bottom: 0; width: 2px; background: var(--border); }
-  .tl-item { position: relative; margin-bottom: 16px; }
-  .tl-dot { position: absolute; left: -16px; top: 4px; width: 10px; height: 10px; border-radius: 50%; background: var(--active-color, #DA2928); border: 2px solid var(--bg); }
-  .tl-year { font-size: 10px; color: var(--sub); text-transform: uppercase; letter-spacing: .8px; }
-  .tl-score { font-size: 15px; font-weight: 900; margin: 2px 0; }
-  .tl-detail { font-size: 11px; color: var(--sub); }
+  /* ───── POSITION SECTION ───── */
+  .position-section {
+    margin-bottom: 24px;
+  }
+  
+  .position-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--sub);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .position-count {
+    font-size: 11px;
+    color: var(--muted);
+  }
 
-  /* ───── NEWS ───── */
-  .news-tag { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; padding: 3px 8px; border-radius: 4px; display: inline-block; margin-bottom: 8px; }
-  .news-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; line-height: 1.35; }
-  .news-body { font-size: 13px; color: #aaa; line-height: 1.5; }
+  /* ───── RECORD CARD ───── */
+  .record-item { 
+    display: flex; 
+    gap: 16px; 
+    padding: 16px 0; 
+    border-bottom: 1px solid var(--border);
+    align-items: flex-start;
+  }
+  
+  .record-item:last-child { border-bottom: none; }
+  
+  .record-emoji { 
+    font-size: 28px; 
+    flex-shrink: 0;
+    width: 40px;
+    text-align: center;
+  }
+  
+  .record-title { 
+    font-size: 14px; 
+    font-weight: 700; 
+    margin-bottom: 4px; 
+  }
+  
+  .record-val { 
+    font-size: 13px; 
+    color: var(--sub);
+    line-height: 1.5;
+  }
 
   /* ───── PALMAROS ───── */
-  .palmares-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
-  .palmares-count { font-size: 24px; font-weight: 900; min-width: 36px; }
-  .palmares-comp { font-size: 13px; font-weight: 700; }
-  .palmares-sub { font-size: 11px; color: var(--sub); }
+  .palmares-row { 
+    display: flex; 
+    align-items: center; 
+    gap: 16px; 
+    padding: 14px 0; 
+    border-bottom: 1px solid var(--border); 
+  }
+  
+  .palmares-row:last-child { border-bottom: none; }
+  
+  .palmares-count { 
+    font-size: 32px; 
+    font-weight: 900; 
+    min-width: 50px;
+    text-align: center;
+  }
+  
+  .palmares-comp { 
+    font-size: 15px; 
+    font-weight: 700; 
+  }
+  
+  .palmares-years { 
+    font-size: 12px; 
+    color: var(--muted);
+    margin-top: 2px;
+  }
 
-  /* ───── ALERT BOX ───── */
-  .alert { border-radius: 12px; padding: 12px 14px; margin-bottom: 14px; border: 1px solid; }
-  .alert-warning { background: rgba(255,160,0,.08); border-color: rgba(255,160,0,.3); }
-  .alert-info { background: rgba(0,100,255,.08); border-color: rgba(0,100,255,.3); }
-  .alert-title { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
-  .alert-text { font-size: 12px; color: var(--sub); line-height: 1.5; }
+  /* ───── TIMELINE ───── */
+  .timeline { 
+    position: relative; 
+    padding-left: 24px; 
+  }
+  
+  .timeline::before { 
+    content: ''; 
+    position: absolute; 
+    left: 8px; 
+    top: 0; 
+    bottom: 0; 
+    width: 2px; 
+    background: var(--border); 
+  }
+  
+  .tl-item { 
+    position: relative; 
+    margin-bottom: 20px; 
+  }
+  
+  .tl-dot { 
+    position: absolute; 
+    left: -20px; 
+    top: 4px; 
+    width: 12px; 
+    height: 12px; 
+    border-radius: 50%; 
+    border: 2px solid var(--bg); 
+  }
+  
+  .tl-year { 
+    font-size: 11px; 
+    color: var(--muted); 
+    text-transform: uppercase; 
+    letter-spacing: 1px;
+    font-weight: 700;
+  }
+  
+  .tl-score { 
+    font-size: 18px; 
+    font-weight: 900; 
+    margin: 4px 0;
+  }
+  
+  .tl-detail { 
+    font-size: 13px; 
+    color: var(--sub); 
+  }
+
+  /* ───── STANDINGS ───── */
+  .standings-table {
+    width: 100%;
+  }
+  
+  .standings-row {
+    display: grid;
+    grid-template-columns: 40px 1fr 50px 50px 50px 50px;
+    gap: 8px;
+    padding: 12px 8px;
+    border-radius: 8px;
+    align-items: center;
+    font-size: 14px;
+  }
+  
+  .standings-row.highlight {
+    background: rgba(255,255,255,0.05);
+  }
+  
+  .standings-pos {
+    font-weight: 900;
+    font-size: 16px;
+  }
+  
+  .standings-team {
+    font-weight: 700;
+  }
+  
+  .standings-stat {
+    text-align: center;
+    color: var(--sub);
+  }
+  
+  .standings-header {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* ───── EUROPA INFO ───── */
+  .europa-box {
+    background: linear-gradient(135deg, rgba(0,51,153,0.2), rgba(255,204,0,0.1));
+    border: 1px solid rgba(0,51,153,0.3);
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  
+  .europa-icon {
+    font-size: 28px;
+  }
+  
+  .europa-title {
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  
+  .europa-text {
+    font-size: 14px;
+    color: var(--sub);
+  }
+
+  /* ───── FOOTER ───── */
+  #footer {
+    border-top: 1px solid var(--border);
+    padding: 40px 20px;
+    text-align: center;
+    margin-top: 40px;
+  }
+  
+  .footer-title {
+    font-size: 24px;
+    font-weight: 900;
+    margin-bottom: 8px;
+  }
+  
+  .footer-sub {
+    font-size: 14px;
+    color: var(--sub);
+  }
+  
+  .footer-date {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 16px;
+  }
+
+  /* ───── RESPONSIVE ───── */
+  @media (max-width: 640px) {
+    .h2h-score { font-size: 36px; }
+    .team-name { font-size: 28px; }
+    .section-title { font-size: 20px; }
+    .player-grid { grid-template-columns: 1fr; }
+    .standings-row { grid-template-columns: 30px 1fr 40px 40px; }
+    .standings-row .standings-stat:nth-child(n+5) { display: none; }
+  }
 </style>
 </head>
 <body>
 
 <div id="header">
+  <div class="header-top">
+    <div class="logo">
+      <span style="color:#fff">⚔️ Eternul</span>
+      <span id="logo-accent" style="color:#DA2928">Derby</span>
+    </div>
+    <div class="date-badge">Aprilie 2026</div>
+  </div>
+  
   <div class="team-switcher">
     <button id="f-btn" class="team-btn fcsb-btn active">⚽ FCSB</button>
     <button id="d-btn" class="team-btn dinamo-btn">🐺 Dinamo</button>
   </div>
+  
   <div id="tabs">
     <button class="tab on" data-t="acasa">🏠 Acasă</button>
-    <button class="tab" data-t="sezon">📊 Sezon 2025-26</button>
-    <button class="tab" data-t="bilant">⚔️ Bilanț H2H</button>
     <button class="tab" data-t="lot">👥 Lot</button>
+    <button class="tab" data-t="calendar">📅 Calendar</button>
+    <button class="tab" data-t="bilant">⚔️ Bilanț H2H</button>
     <button class="tab" data-t="recorduri">🏆 Recorduri</button>
-    <button class="tab" data-t="palmaros">🎖️ Palmaroș</button>
+    <button class="tab" data-t="palmares">🎖️ Palmarès</button>
   </div>
 </div>
 
 <div id="content"></div>
 
+<div id="footer">
+  <div class="footer-title">⚔️ Eternul Derby</div>
+  <div class="footer-sub">FCSB vs Dinamo București · 191 meciuri de rivalitate · 1948-2026</div>
+  <div class="footer-date">Date actualizate: Aprilie 2026</div>
+</div>
+
 <script>
-const C = "#DA2928"; // active color var (updated by JS)
-
-/* ═══════════════════════════════════════════════════
-   DATE ACTUALIZATE — 16 Aprilie 2026
-   Surse: Wikipedia EN Eternal derby, Superliga.ro, LPF
-═══════════════════════════════════════════════════ */
-
 const DATA = {
   FCSB: {
     name: "FCSB",
@@ -176,145 +697,167 @@ const DATA = {
     colorAlt: "#0046AE",
     founded: 1947,
     stadium: "Arena Națională (55.634 loc.)",
-    coach: "Elias Charalambous → Gigi Becali administrează",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/FCSB_Logo.svg/200px-FCSB_Logo.svg.png",
+    coach: "Mirel Rădoi (din martie 2026)",
+    president: "Gigi Becali",
 
     sezon: {
       status: "PLAY-OUT 2025-26",
       statusIcon: "⚠️",
       statusColor: "#FF8C00",
-      pozitie: "Locul 7 (start play-out: 23 pct)",
-      nota: "Premieră istorică: FCSB, campioana ultimilor 2 sezoane consecutivi, a ratat play-off-ul pentru prima dată.",
-      meciuriRecente: [
-        { data: "11 Apr 2026", adv: "Oțelul Galați", rez: "?", comp: "Play-Out" },
-        { data: "16 Ian 2026", adv: "FC Argeș", rez: "0-1 (pierdut)", comp: "Superliga" },
-        { data: "21 Dec 2025", adv: "Rapid", rez: "2-1 (câștigat)", comp: "Superliga" },
-        { data: "06 Dec 2025", adv: "Dinamo", rez: "0-0 (egal)", comp: "Superliga" },
-        { data: "30 Noi 2025", adv: "Farul", rez: "2-1 (câștigat)", comp: "Superliga" },
-      ],
+      pozitie: "Locul 7 (34 pct)",
+      nota: "Premieră istorică: FCSB, campioana ultimilor 2 sezoane consecutive, a ratat play-off-ul pentru prima dată. Mirel Rădoi a preluat echipa în martie 2026, după demisia lui Elias Charalambous.",
       europa: "UEFA Champions League 2025/26 (calificat în grupe)",
+      suporteri: "40.9%"
     },
 
     lot: [
-      { poz: "PO", name: "Ștefan Târnovanu", det: "🇷🇴 Căpitan de lot, #32, 25 ani" },
-      { poz: "PO", name: "Lukas Zima", det: "🇨🇿 Rezervă, #38, 32 ani" },
-      { poz: "FD", name: "Radu Drăgușin", det: "🇷🇴 ← Tottenham (împrumut)" },
-      { poz: "FD", name: "Joyskim Dawa", det: "🇨🇲 Fundaș central" },
-      { poz: "FD", name: "Siyabonga Ngezana", det: "🇿🇦 Fundaș central" },
-      { poz: "FD", name: "Risto Radunovic", det: "🇲🇪 Fundaș dreapta" },
-      { poz: "MJ", name: "Darius Olaru", det: "🇷🇴 Căpitan #10" },
-      { poz: "MJ", name: "Alexandru Șut", det: "🇷🇴 Mijlocaș ofensiv" },
-      { poz: "MJ", name: "Baba Alhassan", det: "🇬🇭 Mijlocaș central" },
-      { poz: "AT", name: "Daniel Bîrligea", det: "🇷🇴 Golgheter, urmărit de Lille" },
-      { poz: "AT", name: "Marius Ștefănescu", det: "🇷🇴 Aripă stânga" },
-      { poz: "AT", name: "Claudiu Keseru", det: "🇷🇴 Veteran, atacant" },
+      { poz: "PO", name: "Ștefan Târnovanu", nr: 32, varsta: 25, nat: "🇷🇴", goluri: 0, assist: 0, meciuri: 22 },
+      { poz: "PO", name: "Lukáš Zima", nr: 38, varsta: 32, nat: "🇨🇿", goluri: 0, assist: 0, meciuri: 6 },
+      { poz: "PO", name: "Mihai Udrea", nr: 34, varsta: 24, nat: "🇷🇴", goluri: 0, assist: 0, meciuri: 2 },
+      { poz: "FD", name: "Siyabonga Ngezana", nr: 30, varsta: 28, nat: "🇿🇦", goluri: 2, assist: 1, meciuri: 24 },
+      { poz: "FD", name: "Vlad Chiricheș", nr: 21, varsta: 35, nat: "🇷🇴", goluri: 1, assist: 0, meciuri: 18 },
+      { poz: "FD", name: "Joyskim Dawa", nr: 5, varsta: 27, nat: "🇨🇲", goluri: 1, assist: 0, meciuri: 20 },
+      { poz: "FD", name: "Risto Radunović", nr: 33, varsta: 33, nat: "🇲🇪", goluri: 0, assist: 4, meciuri: 22 },
+      { poz: "FD", name: "Alexandru Pantea", nr: 28, varsta: 23, nat: "🇷🇴", goluri: 0, assist: 2, meciuri: 19 },
+      { poz: "FD", name: "Valentin Crețu", nr: 2, varsta: 36, nat: "🇷🇴", goluri: 0, assist: 1, meciuri: 15 },
+      { poz: "FD", name: "David Kiki", nr: 12, varsta: 31, nat: "🇧🇯", goluri: 0, assist: 2, meciuri: 18 },
+      { poz: "MJ", name: "Darius Olaru (C)", nr: 27, varsta: 27, nat: "🇷🇴", goluri: 8, assist: 7, meciuri: 26 },
+      { poz: "MJ", name: "Florin Tănase", nr: 10, varsta: 30, nat: "🇷🇴", goluri: 9, assist: 5, meciuri: 24 },
+      { poz: "MJ", name: "Adrian Șut", nr: 8, varsta: 26, nat: "🇷🇴", goluri: 3, assist: 4, meciuri: 21 },
+      { poz: "MJ", name: "Mihai Lixandru", nr: 16, varsta: 24, nat: "🇷🇴", goluri: 2, assist: 3, meciuri: 23 },
+      { poz: "MJ", name: "Baba Alhassan", nr: 6, varsta: 25, nat: "🇬🇭", goluri: 1, assist: 2, meciuri: 20 },
+      { poz: "MJ", name: "Octavian Popescu", nr: 37, varsta: 22, nat: "🇷🇴", goluri: 4, assist: 3, meciuri: 22 },
+      { poz: "AT", name: "Daniel Bîrligea", nr: 9, varsta: 25, nat: "🇷🇴", goluri: 12, assist: 4, meciuri: 25 },
+      { poz: "AT", name: "David Miculescu", nr: 11, varsta: 24, nat: "🇷🇴", goluri: 5, assist: 6, meciuri: 23 },
+      { poz: "AT", name: "Dennis Politic", nr: 20, varsta: 25, nat: "🇷🇴", goluri: 3, assist: 2, meciuri: 19 },
+      { poz: "AT", name: "Denis Alibec", nr: 7, varsta: 34, nat: "🇷🇴", goluri: 2, assist: 1, meciuri: 14 },
     ],
 
     palmares: [
-      { n: 27, comp: "Campionatele României", icon: "🥇" },
-      { n: 24, comp: "Cupa României", icon: "🏆" },
-      { n: 7, comp: "Supercupa României", icon: "🛡️" },
-      { n: 1, comp: "Cupa Campionilor Europeni (1986)", icon: "🌟" },
-      { n: 1, comp: "Supercupa Europei (1986)", icon: "⭐" },
+      { n: 27, comp: "Campionate ale României", icon: "🥇", years: "Ultimul: 2024-25" },
+      { n: 24, comp: "Cupe ale României", icon: "🏆", years: "Ultima: 2020" },
+      { n: 7, comp: "Supercupe ale României", icon: "🛡️", years: "Ultima: 2024" },
+      { n: 1, comp: "Cupa Campionilor Europeni", icon: "🌟", years: "1986 (Sevilla, 0-0, 2-0 pen vs Barcelona)" },
+      { n: 1, comp: "Supercupa Europei", icon: "⭐", years: "1986 (1-0 vs Dynamo Kiev)" },
     ],
+
+    clasament: [
+      { e: "FCSB", p: 34, pos: 7, v: 9, e_: 7, i: 10 },
+      { e: "UTA Arad", p: 32, pos: 8, v: 8, e_: 8, i: 10 },
+      { e: "Botoșani", p: 30, pos: 9, v: 7, e_: 9, i: 10 },
+      { e: "Oțelul Galați", p: 29, pos: 10, v: 7, e_: 8, i: 11 },
+      { e: "Farul Constanța", p: 27, pos: 11, v: 6, e_: 9, i: 11 },
+      { e: "Petrolul Ploiești", p: 25, pos: 12, v: 5, e_: 10, i: 11 },
+    ]
   },
 
   Dinamo: {
     name: "Dinamo",
-    fullName: "FC Dinamo 1948",
+    fullName: "FC Dinamo 1948 București",
     color: "#C8001A",
     colorAlt: "#ffffff",
     founded: 1948,
-    stadium: "Stadionul Dinamo (15.032 loc.) — Nou stadion în construcție",
-    coach: "Zeljko Kopic (croat)",
-    logo: "https://upload.wikimedia.org/wikipedia/ro/thumb/9/90/FC_Dinamo_Bucuresti_logo.svg/200px-FC_Dinamo_Bucuresti_logo.svg.png",
+    stadium: "Arcul de Triumf (Stadionul Dinamo în renovare)",
+    coach: "Zeljko Kopic",
+    president: "Andrei Nicolescu",
 
     sezon: {
       status: "PLAY-OFF 2025-26",
       statusIcon: "✅",
       statusColor: "#00C853",
-      pozitie: "Locul 5 (start play-off: 26 pct)",
-      nota: "Dinamo a ieșit din insolvență în 2025. Poate activa în Europa din 2026-27. Se luptă pentru top 3 în play-off.",
-      meciuriRecente: [
-        { data: "12 Apr 2026", adv: "CFR Cluj", rez: "1-1 (egal)", comp: "Play-Off" },
-        { data: "06 Apr 2026", adv: "FC Argeș", rez: "?", comp: "Play-Off" },
-        { data: "16 Mar 2026", adv: "Rapid", rez: "?", comp: "Play-Off" },
-        { data: "06 Dec 2025", adv: "FCSB", rez: "0-0 (egal)", comp: "Superliga" },
-        { data: "02 Aug 2025", adv: "FCSB", rez: "4-3 (câștigat!)", comp: "Superliga" },
-      ],
-      europa: "Drept la Europa din sezonul 2026-27 (după ieșirea din insolvență)",
+      pozitie: "Locul 3 (42 pct)",
+      nota: "Dinamo a ieșit din insolvență în 2025. Poate activa în Europa din 2026-27. Se luptă pentru podium în play-off, cea mai bună poziție din ultimii ani.",
+      europa: "Eligibilă pentru Europa din sezonul 2026-27",
+      suporteri: "13.7%"
     },
 
     lot: [
-      { poz: "PO", name: "Ante Golubovic", det: "🇭🇷 Portar titular" },
-      { poz: "FD", name: "Kosta Boateng", det: "🇬🇭🇷🇴 Contract prelungit" },
-      { poz: "FD", name: "Valentin Țicu", det: "🇷🇴 Transfer iarnă 2026 (↑ Petrolul)" },
-      { poz: "FD", name: "Andrei Roșca", det: "🇷🇴 Fundaș dreapta" },
-      { poz: "FD", name: "Nikita Stoinov", det: "🇷🇴🇧🇬 Fundaș central, 19 ani" },
-      { poz: "MJ", name: "Cosmin Cîrjan", det: "🇷🇴 ↑ Arsenal academy" },
-      { poz: "MJ", name: "Karamoko Dembélé", det: "🇬🇧🇨🇮 Aripă stânga" },
-      { poz: "MJ", name: "Ianis Tarbă", det: "🇷🇴 Transfer ian 2026 (↑ Celta Vigo, 19 ani)" },
-      { poz: "AT", name: "Daniel Popa (C)", det: "🇷🇴 Căpitan și golgheter" },
-      { poz: "AT", name: "Adrian Mazilu", det: "🇷🇴 19 ani, talent național" },
-      { poz: "AT", name: "Alexandru Musi", det: "🇷🇴🇦🇱 20 ani" },
-      { poz: "AT", name: "Muris Mešanović", det: "🇧🇦 Atacant" },
+      { poz: "PO", name: "Alexandru Roșca", nr: 73, varsta: 22, nat: "🇷🇴", goluri: 0, assist: 0, meciuri: 24 },
+      { poz: "PO", name: "Codruț Sandu", nr: 31, varsta: 19, nat: "🇷🇴", goluri: 0, assist: 0, meciuri: 4 },
+      { poz: "FD", name: "Nikita Stoinov", nr: 15, varsta: 20, nat: "🇧🇬🇷🇴", goluri: 1, assist: 2, meciuri: 22 },
+      { poz: "FD", name: "Maxime Sivis", nr: 27, varsta: 27, nat: "🇫🇷", goluri: 0, assist: 3, meciuri: 24 },
+      { poz: "FD", name: "Mihnea Toader", nr: 26, varsta: 19, nat: "🇷🇴", goluri: 0, assist: 1, meciuri: 18 },
+      { poz: "FD", name: "Andrei Roșca", nr: 3, varsta: 26, nat: "🇷🇴", goluri: 0, assist: 2, meciuri: 20 },
+      { poz: "FD", name: "Kosta Boateng", nr: 4, varsta: 25, nat: "🇬🇭🇷🇴", goluri: 2, assist: 1, meciuri: 21 },
+      { poz: "MJ", name: "Cătălin Cîrjan (C)", nr: 10, varsta: 23, nat: "🇷🇴", goluri: 7, assist: 9, meciuri: 26 },
+      { poz: "MJ", name: "Eddy Gnahoré", nr: 8, varsta: 32, nat: "🇨🇮", goluri: 3, assist: 4, meciuri: 23 },
+      { poz: "MJ", name: "Georgi Milanov", nr: 17, varsta: 34, nat: "🇧🇬", goluri: 2, assist: 5, meciuri: 22 },
+      { poz: "MJ", name: "Cristian Licsandru", nr: 6, varsta: 22, nat: "🇷🇴", goluri: 1, assist: 2, meciuri: 19 },
+      { poz: "MJ", name: "Karamoko Dembélé", nr: 7, varsta: 22, nat: "🏴󠁧󠁢󠁳󠁣󠁴󠁿🇨🇮", goluri: 4, assist: 6, meciuri: 24 },
+      { poz: "MJ", name: "Casian Soare", nr: 22, varsta: 19, nat: "🇷🇴", goluri: 0, assist: 1, meciuri: 12 },
+      { poz: "AT", name: "Daniel Popa", nr: 9, varsta: 28, nat: "🇷🇴", goluri: 14, assist: 3, meciuri: 26 },
+      { poz: "AT", name: "Adrian Mazilu", nr: 11, varsta: 20, nat: "🇷🇴", goluri: 6, assist: 4, meciuri: 22 },
+      { poz: "AT", name: "Alexandru Musi", nr: 19, varsta: 21, nat: "🇷🇴🇦🇱", goluri: 5, assist: 3, meciuri: 20 },
+      { poz: "AT", name: "Raul Rotund", nr: 30, varsta: 20, nat: "🇷🇴", goluri: 3, assist: 2, meciuri: 16 },
     ],
 
     palmares: [
-      { n: 18, comp: "Campionatele României", icon: "🥇" },
-      { n: 13, comp: "Cupa României", icon: "🏆" },
-      { n: 2, comp: "Supercupa României", icon: "🛡️" },
-      { n: 0, comp: "Semi-finale Cupa Campionilor (1984)", icon: "🌟" },
-      { n: 0, comp: "Semi-finale Cupa Cupelor (1990)", icon: "⭐" },
+      { n: 18, comp: "Campionate ale României", icon: "🥇", years: "Ultimul: 2006-07" },
+      { n: 13, comp: "Cupe ale României", icon: "🏆", years: "Ultima: 2011-12" },
+      { n: 2, comp: "Supercupe ale României", icon: "🛡️", years: "Ultima: 2005" },
+      { n: 0, comp: "Semifinală Cupa Campionilor", icon: "🌟", years: "1984 (eliminată de Liverpool)" },
+      { n: 0, comp: "Semifinală Cupa Cupelor", icon: "⭐", years: "1990 (eliminată de Anderlecht)" },
     ],
+
+    clasament: [
+      { e: "U Craiova", p: 45, pos: 1, v: 13, e_: 6, i: 7 },
+      { e: "Rapid", p: 43, pos: 2, v: 12, e_: 7, i: 7 },
+      { e: "Dinamo", p: 42, pos: 3, v: 12, e_: 6, i: 8 },
+      { e: "CFR Cluj", p: 40, pos: 4, v: 11, e_: 7, i: 8 },
+      { e: "U Cluj", p: 39, pos: 5, v: 11, e_: 6, i: 9 },
+      { e: "FC Argeș", p: 37, pos: 6, v: 10, e_: 7, i: 9 },
+    ]
   }
 };
 
-/* ──── DATE H2H ──── */
-// Sursa: Wikipedia EN "Eternal derby (Romania)" – actualizat feb 2026
-// Total: 191 meciuri (inclusiv toate competițiile interne de top)
-// FCSB: 72 victorii | Egaluri: 57 | Dinamo: 62 victorii
 const H2H = {
   total: 191,
-  wFCSB: 72, draws: 57, wDinamo: 62,
-  goluriFCSB: 280, // goluri totale aproximative
+  wFCSB: 72, 
+  draws: 57, 
+  wDinamo: 62,
+  goluriFCSB: 280,
   goluriDinamo: 265,
 };
 
 const MECIURI_ISTORICE = [
-  { d: "2 Aug 2025", s: "Dinamo 4-3 FCSB", c: "Superliga 2025-26", m: "Thriller de debut de sezon! 7 goluri", w: "D" },
-  { d: "6 Dec 2025", s: "FCSB 0-0 Dinamo", c: "Superliga / Etapa 18", m: "Meci echilibrat pe Arena Națională", w: "E" },
-  { d: "20 Oct 2024", s: "Dinamo 0-2 FCSB", c: "Superliga 2024-25", m: "Bîrligea '26, Musi '90+3", w: "F" },
+  { d: "6 Dec 2025", s: "FCSB 0-0 Dinamo", c: "Superliga 2025-26", m: "Meci echilibrat pe Arena Națională", w: "E" },
+  { d: "2 Aug 2025", s: "Dinamo 4-3 FCSB", c: "Superliga 2025-26", m: "🔥 Thriller de debut! 7 goluri", w: "D" },
+  { d: "20 Oct 2024", s: "Dinamo 0-2 FCSB", c: "Superliga 2024-25", m: "Bîrligea '26, Musi (a) '90+3", w: "F" },
   { d: "25 Feb 2024", s: "FCSB 1-0 Dinamo", c: "Liga 1", m: "Bîrligea '47 — golul decisiv", w: "F" },
   { d: "10 Dec 2023", s: "Dinamo 0-4 FCSB", c: "Cupa României", m: "Victorie zdrobitoare pentru FCSB", w: "F" },
   { d: "12 Sep 2021", s: "FCSB 6-0 Dinamo", c: "Liga 1", m: "⚠️ Cea mai mare victorie FCSB în derby!", w: "F" },
-  { d: "2 Mai 1990", s: "Dinamo 6-4 Steaua", c: "Divizia A", m: "🔥 Recordul absolut: 10 goluri!", w: "D" },
-  { d: "11 Apr 1982", s: "Dinamo 1-1 Steaua", c: "Divizia A", m: "Dudu Georgescu / Septimiu Câmpeanu", w: "E" },
-  { d: "21 Noi 1948", s: "CSCA 0-1 Dinamo", c: "Primul Derby", m: "Marin Apostol '42 — PRIMUL GOL DIN ISTORIE", w: "D" },
+  { d: "2 Mai 1990", s: "Dinamo 6-4 Steaua", c: "Divizia A", m: "🔥 Record: 10 goluri într-un meci!", w: "D" },
+  { d: "21 Noi 1948", s: "CSCA 0-1 Dinamo", c: "Primul Derby", m: "Marin Apostol '42 — primul gol din istorie", w: "D" },
 ];
+
+const MECIURI_VIITOARE = {
+  FCSB: [
+    { d: "27 Apr 2026", adv: "Oțelul Galați", acasa: true, comp: "Play-Out" },
+    { d: "4 Mai 2026", adv: "UTA Arad", acasa: false, comp: "Play-Out" },
+    { d: "11 Mai 2026", adv: "Farul", acasa: true, comp: "Play-Out" },
+  ],
+  Dinamo: [
+    { d: "28 Apr 2026", adv: "CFR Cluj", acasa: false, comp: "Play-Off" },
+    { d: "5 Mai 2026", adv: "Rapid", acasa: true, comp: "Play-Off" },
+    { d: "12 Mai 2026", adv: "U Craiova", acasa: false, comp: "Play-Off" },
+  ]
+};
 
 const RECORDURI = [
-  { icon: "🏆", title: "Cea mai mare victorie (toate compet.)", val: "FCSB 6-0 Dinamo — 12 Sept 2021" },
-  { icon: "⚽", title: "Cele mai multe goluri într-un singur meci", val: "Dinamo 6-4 Steaua — 2 Mai 1990 (10 goluri!)" },
-  { icon: "📅", title: "Primul derby din istorie", val: "21 Nov 1948 — CSCA 0-1 Dinamo (Marin Apostol '42)" },
+  { icon: "🏆", title: "Cea mai mare victorie din istorie", val: "FCSB 6-0 Dinamo — 12 Septembrie 2021" },
+  { icon: "⚽", title: "Cele mai multe goluri într-un meci", val: "Dinamo 6-4 Steaua — 2 Mai 1990 (10 goluri!)" },
+  { icon: "📅", title: "Primul derby din istorie", val: "21 Noiembrie 1948 — CSCA 0-1 Dinamo" },
+  { icon: "🎯", title: "Primul gol din istorie", val: "Marin Apostol '42 (pentru Dinamo)" },
   { icon: "🔗", title: "Serie fără înfrângere (FCSB)", val: "19 meciuri consecutive (record absolut)" },
-  { icon: "📊", title: "Meciuri totale disputate", val: "191 meciuri (1948 – prezent)" },
-  { icon: "🌍", title: "Cotare Europeană", val: "Derby de 5 ⭐ — alături de El Clasico, Old Firm, etc." },
-  { icon: "👥", title: "Suporteri FCSB (sondaj GSP)", val: "40,9% din microbiștii României" },
-  { icon: "👥", title: "Suporteri Dinamo (sondaj GSP)", val: "13,7% din microbiștii României" },
-  { icon: "🎯", title: "Goluri FCSB în derby-uri", val: "~280 goluri marcate în 191 meciuri" },
-  { icon: "🎯", title: "Goluri Dinamo în derby-uri", val: "~265 goluri marcate în 191 meciuri" },
+  { icon: "📊", title: "Meciuri totale disputate", val: "191 meciuri (1948 – aprilie 2026)" },
+  { icon: "⚽", title: "Goluri FCSB în derby-uri", val: "~280 goluri în 191 meciuri" },
+  { icon: "⚽", title: "Goluri Dinamo în derby-uri", val: "~265 goluri în 191 meciuri" },
+  { icon: "🌍", title: "Cotare Europeană", val: "Derby de 5 ⭐ — alături de El Clasico, Old Firm" },
+  { icon: "👥", title: "Suporteri FCSB", val: "40,9% din microbiștii României (GSP)" },
+  { icon: "👥", title: "Suporteri Dinamo", val: "13,7% din microbiștii României (GSP)" },
 ];
 
-/* ════════════════════ RENDER ════════════════════ */
 let curE = "FCSB", curT = "acasa";
-
-function accent() {
-  return curE === "FCSB" ? DATA.FCSB.color : DATA.Dinamo.color;
-}
-function accentAlt() {
-  return curE === "FCSB" ? DATA.FCSB.colorAlt : DATA.Dinamo.colorAlt;
-}
 
 function pct(v, total) { return Math.round(v / total * 100); }
 
@@ -324,21 +867,28 @@ function matchBorder(w) {
   return "#444";
 }
 
+const pozLabels = { PO: "🧤 Portari", FD: "🛡️ Fundași", MJ: "⚡ Mijlocași", AT: "⚽ Atacanți" };
+
 function renderAcasa(E) {
   const d = DATA[E];
+  const isPlayoff = E === "Dinamo";
+  
   return `
-  <div style="text-align:center; padding: 10px 0 16px;">
-    <img src="${d.logo}" style="height:80px; margin-bottom:10px;">
-    <div style="font-size:22px; font-weight:900; letter-spacing:.5px;">${d.fullName}</div>
-    <div style="font-size:13px; color:var(--sub); margin-top:4px;">Fondată: ${d.founded} &nbsp;|&nbsp; ${d.stadium}</div>
-    <div style="font-size:12px; color:var(--sub); margin-top:2px;">Antrenor: ${d.coach}</div>
+  <div class="team-hero" style="background: linear-gradient(135deg,${d.color}15,${d.colorAlt}10); border: 1px solid ${d.color}30;">
+    <div class="team-name" style="color:${d.color}">${d.fullName}</div>
+    <div class="team-info">
+      <span>📅 Fondată: ${d.founded}</span>
+      <span>🏟️ ${d.stadium}</span>
+      <span>👔 ${d.coach}</span>
+    </div>
   </div>
 
-  <div class="season-banner" style="background: linear-gradient(135deg,${d.color}22,${d.colorAlt}22); border:1px solid ${d.color}44;">
+  <div class="status-banner" style="background:${d.sezon.statusColor}10; border-color:${d.sezon.statusColor}">
     <div class="banner-icon">${d.sezon.statusIcon}</div>
     <div class="banner-text">
-      <strong style="color:${d.sezon.statusColor}">${d.sezon.status}</strong>
-      ${d.sezon.pozitie}
+      <div class="banner-title" style="color:${d.sezon.statusColor}">${d.sezon.status}</div>
+      <div class="banner-sub">${d.sezon.pozitie}</div>
+      <div class="banner-note">${d.sezon.nota}</div>
     </div>
   </div>
 
@@ -359,19 +909,140 @@ function renderAcasa(E) {
       </div>
     </div>
     <div class="bar-wrap">
-      <div style="display:flex;height:100%;">
-        <div style="width:${pct(H2H.wFCSB,H2H.total)}%;background:${DATA.FCSB.color}"></div>
-        <div style="width:${pct(H2H.draws,H2H.total)}%;background:#333"></div>
-        <div style="width:${pct(H2H.wDinamo,H2H.total)}%;background:${DATA.Dinamo.color}"></div>
-      </div>
+      <div class="bar-fill" style="width:${pct(H2H.wFCSB,H2H.total)}%;background:${DATA.FCSB.color}"></div>
+      <div class="bar-fill" style="width:${pct(H2H.draws,H2H.total)}%;background:#333"></div>
+      <div class="bar-fill" style="width:${pct(H2H.wDinamo,H2H.total)}%;background:${DATA.Dinamo.color}"></div>
     </div>
-    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--sub);margin-top:4px;">
-      <span>${pct(H2H.wFCSB,H2H.total)}% FCSB</span>
-      <span>${H2H.total} meciuri totale</span>
-      <span>Dinamo ${pct(H2H.wDinamo,H2H.total)}%</span>
+    <div class="bar-labels">
+      <span style="color:${DATA.FCSB.color};font-weight:700;">${pct(H2H.wFCSB,H2H.total)}% FCSB</span>
+      <span>${H2H.total} meciuri</span>
+      <span style="color:${DATA.Dinamo.color};font-weight:700;">Dinamo ${pct(H2H.wDinamo,H2H.total)}%</span>
     </div>
   </div>
 
+  <div class="card">
+    <div class="card-title">📊 Clasament ${isPlayoff ? 'Play-Off' : 'Play-Out'} 2025-26</div>
+    <div class="standings-table">
+      <div class="standings-row">
+        <div class="standings-header">#</div>
+        <div class="standings-header">Echipă</div>
+        <div class="standings-header">V</div>
+        <div class="standings-header">E</div>
+        <div class="standings-header">Î</div>
+        <div class="standings-header">Pct</div>
+      </div>
+      ${d.clasament.map(r => `
+        <div class="standings-row ${r.e === E || r.e === d.name ? 'highlight' : ''}">
+          <div class="standings-pos" style="${r.e === E || r.e === d.name ? 'color:'+d.color : ''}">${r.pos}</div>
+          <div class="standings-team" style="${r.e === E || r.e === d.name ? 'color:'+d.color : ''}">${r.e}</div>
+          <div class="standings-stat" style="color:#22c55e">${r.v}</div>
+          <div class="standings-stat">${r.e_}</div>
+          <div class="standings-stat" style="color:#ef4444">${r.i}</div>
+          <div class="standings-stat" style="font-weight:800;color:#fff">${r.p}</div>
+        </div>
+      `).join('')}
+    </div>
+  </div>
+
+  <div class="europa-box">
+    <div class="europa-icon">🇪🇺</div>
+    <div>
+      <div class="europa-title">Europa</div>
+      <div class="europa-text">${d.sezon.europa}</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <div class="card-title">📈 Suporteri</div>
+    <div style="font-size:32px;font-weight:900;color:${d.color}">${d.sezon.suporteri}</div>
+    <div style="font-size:14px;color:var(--sub);margin-top:4px;">din microbiștii României (sondaj GSP)</div>
+  </div>`;
+}
+
+function renderLot(E) {
+  const d = DATA[E];
+  const pozOrder = ['PO', 'FD', 'MJ', 'AT'];
+  
+  let html = `<div class="section-title">👥 Lot ${d.name} — 2025/26</div>`;
+  
+  pozOrder.forEach(p => {
+    const juc = d.lot.filter(j => j.poz === p);
+    if (!juc.length) return;
+    
+    html += `
+    <div class="position-section">
+      <div class="position-title">
+        ${pozLabels[p]}
+        <span class="position-count">(${juc.length})</span>
+      </div>
+      <div class="player-grid">
+        ${juc.map(j => `
+          <div class="player-card" style="border-color:${d.color}">
+            <div class="player-pos">#${j.nr} · ${j.poz}</div>
+            <div class="player-name">${j.name}</div>
+            <div class="player-detail">${j.nat} · ${j.varsta} ani</div>
+            <div class="player-stats">
+              <div>
+                <div class="player-stat-value" style="color:${d.color}">${j.goluri}</div>
+                <div class="player-stat-label">Goluri</div>
+              </div>
+              <div>
+                <div class="player-stat-value" style="color:#3b82f6">${j.assist}</div>
+                <div class="player-stat-label">Assisturi</div>
+              </div>
+              <div>
+                <div class="player-stat-value" style="color:var(--sub)">${j.meciuri}</div>
+                <div class="player-stat-label">Meciuri</div>
+              </div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>`;
+  });
+  
+  const topScorers = [...d.lot].filter(p => p.goluri > 0).sort((a,b) => b.goluri - a.goluri).slice(0, 5);
+  html += `
+  <div class="card">
+    <div class="card-title">🎯 Top Marcatori ${d.name}</div>
+    ${topScorers.map((p, i) => `
+      <div class="stat-row">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;${i === 0 ? 'background:'+d.color+';color:#fff' : 'background:#1a1a1a;color:'+d.color}">${i+1}</div>
+          <div>
+            <div style="font-weight:700;">${p.name}</div>
+            <div style="font-size:11px;color:var(--muted)">${p.poz} · #${p.nr}</div>
+          </div>
+        </div>
+        <div style="font-size:24px;font-weight:900;color:${d.color}">${p.goluri}</div>
+      </div>
+    `).join('')}
+  </div>`;
+  
+  return html;
+}
+
+function renderCalendar(E) {
+  const d = DATA[E];
+  const meciuriViitoare = MECIURI_VIITOARE[E];
+  
+  return `
+  <div class="section-title">📅 Calendar ${d.name}</div>
+  
+  <div class="card">
+    <div class="card-title">🗓️ Meciuri Viitoare</div>
+    ${meciuriViitoare.map(m => `
+      <div class="match-card" style="border-color:${d.color}">
+        <div class="match-top">
+          <span class="match-competition">${m.comp}</span>
+          <span class="match-date">${m.d}</span>
+        </div>
+        <div class="match-score">${m.acasa ? d.name + ' vs ' + m.adv : m.adv + ' vs ' + d.name}</div>
+        <div class="match-note">${m.acasa ? '🏠 Acasă' : '✈️ Deplasare'}</div>
+      </div>
+    `).join('')}
+  </div>
+  
   <div class="card">
     <div class="card-title">📅 Ultimele Derby-uri</div>
     ${MECIURI_ISTORICE.slice(0,4).map(m => `
@@ -384,94 +1055,16 @@ function renderAcasa(E) {
         <div class="match-note">${m.m}</div>
       </div>
     `).join('')}
-  </div>
-
-  <div class="card">
-    <div class="card-title">🌍 Rivalitate europeană</div>
-    <div style="font-size:13px;color:var(--sub);line-height:1.7;">
-      Dinamo vs FCSB este unul dintre cele <strong style="color:${accent()}">8 derby-uri de 5 stele</strong> din Europa, alături de Real Madrid – Barcelona, Celtic – Rangers, Ajax – Feyenoord, Galatasaray – Fenerbahce și altele.
-    </div>
   </div>`;
-}
-
-function renderSezon(E) {
-  const d = DATA[E];
-  return `
-  <div class="section-title">📊 Sezon 2025-2026</div>
-
-  <div class="season-banner" style="background:${d.sezon.statusColor}15; border:1px solid ${d.sezon.statusColor}44;">
-    <div class="banner-icon">${d.sezon.statusIcon}</div>
-    <div class="banner-text">
-      <strong style="color:${d.sezon.statusColor}">${d.sezon.status}</strong>
-      ${d.sezon.pozitie}
-    </div>
-  </div>
-
-  <div class="alert alert-warning">
-    <div class="alert-title">ℹ️ Context sezon</div>
-    <div class="alert-text">${d.sezon.nota}</div>
-  </div>
-
-  <div class="alert alert-info">
-    <div class="alert-title">🇪🇺 Europa</div>
-    <div class="alert-text">${d.sezon.europa}</div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">📅 Meciuri recente</div>
-    ${d.sezon.meciuriRecente.map(m => `
-      <div class="stat-row">
-        <div>
-          <div style="font-size:13px;font-weight:700;">${m.adv}</div>
-          <div style="font-size:11px;color:var(--sub);">${m.data} · ${m.comp}</div>
-        </div>
-        <div class="stat-badge" style="background:${
-          m.rez.includes('câștigat') ? d.color+'33' : 
-          m.rez.includes('pierdut') ? '#ff000033' : '#33333355'
-        }; color:${
-          m.rez.includes('câștigat') ? d.color : 
-          m.rez.includes('pierdut') ? '#ff6666' : '#888'
-        };">${m.rez.split(' ')[0]}</div>
-      </div>
-    `).join('')}
-  </div>
-
-  ${E === 'FCSB' ? `
-  <div class="card">
-    <div class="card-title">🏆 Play-Out 2025-26 (start)</div>
-    ${[
-      {e:'FCSB', p:23}, {e:'UTA Arad', p:22}, {e:'Botoșani', p:21},
-      {e:'Oțelul', p:21}, {e:'Farul', p:19}, {e:'Petrolul', p:16},
-      {e:'Csikszereda', p:16}, {e:'Slobozia', p:13}, {e:'Hermannstadt', p:12}, {e:'Metaloglobus', p:6}
-    ].map((r,i) => `
-      <div class="stat-row" style="${r.e==='FCSB'?'background:'+DATA.FCSB.color+'11;border-radius:8px;padding:10px 8px;':''}">
-        <span style="font-size:14px;${r.e==='FCSB'?'font-weight:900;color:'+DATA.FCSB.color:''}">${i+7}. ${r.e}</span>
-        <span class="stat-badge">${r.p} pct</span>
-      </div>
-    `).join('')}
-  </div>
-  ` : `
-  <div class="card">
-    <div class="card-title">🏆 Play-Off 2025-26 (start)</div>
-    ${[
-      {e:'U Craiova', p:30}, {e:'Rapid', p:28}, {e:'U Cluj', p:27},
-      {e:'CFR Cluj', p:27}, {e:'Dinamo', p:26}, {e:'FC Argeș', p:25}
-    ].map((r,i) => `
-      <div class="stat-row" style="${r.e==='Dinamo'?'background:'+DATA.Dinamo.color+'11;border-radius:8px;padding:10px 8px;':''}">
-        <span style="font-size:14px;${r.e==='Dinamo'?'font-weight:900;color:'+DATA.Dinamo.color:''}">${i+1}. ${r.e}</span>
-        <span class="stat-badge">${r.p} pct</span>
-      </div>
-    `).join('')}
-  </div>
-  `}`;
 }
 
 function renderBilant() {
   return `
   <div class="section-title">⚔️ Bilanț Complet H2H</div>
+  
   <div class="card">
-    <div class="card-title">📊 Statistici generale (1948 – Apr 2026)</div>
-    <div class="h2h-box" style="padding:16px 0;">
+    <div class="card-title">📊 Statistici Generale (1948 – Aprilie 2026)</div>
+    <div class="h2h-box" style="padding:24px 0;">
       <div>
         <div class="h2h-score" style="color:${DATA.FCSB.color}">${H2H.wFCSB}</div>
         <div class="h2h-label">Victorii FCSB</div>
@@ -485,14 +1078,12 @@ function renderBilant() {
         <div class="h2h-label">Victorii Dinamo</div>
       </div>
     </div>
-    <div class="bar-wrap" style="height:14px;">
-      <div style="display:flex;height:100%;">
-        <div style="width:${pct(H2H.wFCSB,H2H.total)}%;background:${DATA.FCSB.color}"></div>
-        <div style="width:${pct(H2H.draws,H2H.total)}%;background:#333"></div>
-        <div style="width:${pct(H2H.wDinamo,H2H.total)}%;background:${DATA.Dinamo.color}"></div>
-      </div>
+    <div class="bar-wrap" style="height:16px;">
+      <div class="bar-fill" style="width:${pct(H2H.wFCSB,H2H.total)}%;background:${DATA.FCSB.color}"></div>
+      <div class="bar-fill" style="width:${pct(H2H.draws,H2H.total)}%;background:#333"></div>
+      <div class="bar-fill" style="width:${pct(H2H.wDinamo,H2H.total)}%;background:${DATA.Dinamo.color}"></div>
     </div>
-    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--sub);margin-top:6px;">
+    <div class="bar-labels">
       <span style="color:${DATA.FCSB.color};font-weight:700;">FCSB ${pct(H2H.wFCSB,H2H.total)}%</span>
       <span>${H2H.total} meciuri</span>
       <span style="color:${DATA.Dinamo.color};font-weight:700;">${pct(H2H.wDinamo,H2H.total)}% Dinamo</span>
@@ -500,7 +1091,21 @@ function renderBilant() {
   </div>
 
   <div class="card">
-    <div class="card-title">📅 Cronologie derby-uri</div>
+    <div class="card-title">⚽ Goluri Totale</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;text-align:center;padding:16px 0;">
+      <div>
+        <div style="font-size:40px;font-weight:900;color:${DATA.FCSB.color}">${H2H.goluriFCSB}</div>
+        <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:4px;">Goluri FCSB</div>
+      </div>
+      <div>
+        <div style="font-size:40px;font-weight:900;color:${DATA.Dinamo.color}">${H2H.goluriDinamo}</div>
+        <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:4px;">Goluri Dinamo</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📅 Cronologie Derby-uri</div>
     <div class="timeline">
       ${MECIURI_ISTORICE.map(m => `
         <div class="tl-item">
@@ -514,30 +1119,6 @@ function renderBilant() {
   </div>`;
 }
 
-function renderLot(E) {
-  const d = DATA[E];
-  const poz = ['PO','FD','MJ','AT'];
-  const pozLabel = {PO:'Portari',FD:'Fundași',MJ:'Mijlocași',AT:'Atacanți'};
-  let html = `<div class="section-title">👥 Lot ${d.name} — 2025/26</div>`;
-
-  poz.forEach(p => {
-    const juc = d.lot.filter(j => j.poz === p);
-    if (!juc.length) return;
-    html += `<div style="font-size:11px;color:var(--sub);text-transform:uppercase;letter-spacing:1px;margin:12px 0 8px;">${pozLabel[p]}</div>`;
-    html += `<div class="player-grid">`;
-    juc.forEach(j => {
-      html += `
-        <div class="player-card" style="border-color:${d.color}">
-          <div class="player-pos">${p}</div>
-          <div class="player-name">${j.name}</div>
-          <div class="player-detail">${j.det}</div>
-        </div>`;
-    });
-    html += `</div>`;
-  });
-  return html;
-}
-
 function renderRecorduri() {
   return `
   <div class="section-title">🏆 Recorduri & Statistici Derby</div>
@@ -545,7 +1126,7 @@ function renderRecorduri() {
     ${RECORDURI.map(r => `
       <div class="record-item">
         <div class="record-emoji">${r.icon}</div>
-        <div class="record-text">
+        <div>
           <div class="record-title">${r.title}</div>
           <div class="record-val">${r.val}</div>
         </div>
@@ -556,39 +1137,42 @@ function renderRecorduri() {
 
 function renderPalmares(E) {
   const d = DATA[E];
+  
   return `
-  <div class="section-title">🎖️ Palmaroș ${d.name}</div>
+  <div class="section-title">🎖️ Palmarès ${d.name}</div>
   <div class="card">
     ${d.palmares.map(p => `
       <div class="palmares-row">
-        <div class="palmares-count" style="color:${d.color}">${p.n > 0 ? p.n : '—'}</div>
+        <div class="palmares-count" style="color:${p.n > 0 ? d.color : 'var(--muted)'}">${p.n > 0 ? p.n : '—'}</div>
         <div>
           <div class="palmares-comp">${p.icon} ${p.comp}</div>
+          ${p.years ? `<div class="palmares-years">${p.years}</div>` : ''}
         </div>
       </div>
     `).join('')}
   </div>
-  ${E === 'FCSB' ? `
-  <div class="card" style="border:1px solid ${DATA.FCSB.color}44;">
-    <div style="font-size:13px;line-height:1.7;color:var(--sub);">
-      FCSB este <strong style="color:${DATA.FCSB.color}">singura echipă din România</strong> care a câștigat trofee europene continentale — Cupa Campionilor Europeni (1986) și Supercupa Europei (1986).
+  
+  <div class="card" style="border-left:4px solid ${d.color};">
+    <div style="font-size:14px;color:var(--sub);line-height:1.7;">
+      ${E === 'FCSB' ? `
+        FCSB este <strong style="color:${d.color}">singura echipă din România</strong> care a câștigat trofee europene continentale — Cupa Campionilor Europeni (1986, Sevilla) și Supercupa Europei (1986).
+      ` : `
+        Dinamo a atins <strong style="color:${d.color}">semifinalele Cupei Campionilor</strong> în 1984 (eliminată de Liverpool) și semifinalele Cupei Cupelor în 1990 (eliminată de Anderlecht).
+      `}
     </div>
-  </div>` : `
-  <div class="card" style="border:1px solid ${DATA.Dinamo.color}44;">
-    <div style="font-size:13px;line-height:1.7;color:var(--sub);">
-      Dinamo a atins <strong style="color:${DATA.Dinamo.color}">semifinalele Cupei Campionilor</strong> în 1984 și semifinalele Cupei Cupelor în 1990.
-    </div>
-  </div>`}`;
+  </div>`;
 }
 
 function render() {
   const d = DATA[curE];
-  document.documentElement.style.setProperty('--active-color', d.color);
+  
+  document.getElementById('logo-accent').style.color = d.color;
 
   document.querySelectorAll('.tab').forEach(t => {
-    t.style.background = t.dataset.t === curT ? d.color : '#151525';
-    t.style.color = t.dataset.t === curT ? '#fff' : '#666';
-    t.classList.toggle('on', t.dataset.t === curT);
+    const isActive = t.dataset.t === curT;
+    t.style.background = isActive ? d.color : '#1a1a1a';
+    t.style.color = isActive ? '#fff' : 'var(--muted)';
+    t.classList.toggle('on', isActive);
   });
 
   document.getElementById('f-btn').className = 'team-btn fcsb-btn' + (curE === 'FCSB' ? ' active' : '');
@@ -596,11 +1180,11 @@ function render() {
 
   let html = '';
   if (curT === 'acasa')     html = renderAcasa(curE);
-  if (curT === 'sezon')     html = renderSezon(curE);
-  if (curT === 'bilant')    html = renderBilant();
   if (curT === 'lot')       html = renderLot(curE);
+  if (curT === 'calendar')  html = renderCalendar(curE);
+  if (curT === 'bilant')    html = renderBilant();
   if (curT === 'recorduri') html = renderRecorduri();
-  if (curT === 'palmaros')  html = renderPalmares(curE);
+  if (curT === 'palmares')  html = renderPalmares(curE);
 
   document.getElementById('content').innerHTML = html;
   window.scrollTo(0, 0);
