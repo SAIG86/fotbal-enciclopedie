@@ -1,10 +1,135 @@
 <!DOCTYPE html>
-<html>
+<html lang="ro">
 <head>
-  <meta charset="UTF-8">
-  <title>Fotbal Enciclopedie</title>
+    <meta charset="UTF-8">
+    <title>Enciclopedie Fotbal – FCSB & Dinamo</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: Arial, sans-serif; background: #111; color: #fff; display: flex; height: 100vh; }
+        #sidebar { width: 220px; background: #222; border-right: 2px solid #333; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+        #sidebar h2 { margin-top: 0; font-size: 20px; text-align: center; }
+        .team-btn { padding: 10px; border-radius: 6px; border: none; font-size: 16px; font-weight: bold; cursor: pointer; color: #fff; }
+        .team-btn.active { outline: 2px solid #fff; }
+        .fcsb-btn { background: linear-gradient(90deg, #DA2928, #0046AE); }
+        .dinamo-btn { background: linear-gradient(90deg, #FFFFFF, #D00000); color: #000; }
+        #main { flex: 1; display: flex; flex-direction: column; }
+        #header { padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
+        #teamName { font-size: 26px; font-weight: bold; }
+        #tagline { font-size: 14px; opacity: 0.8; }
+        #tabs { display: flex; gap: 10px; padding: 0 20px 10px 20px; }
+        .tab-btn { padding: 8px 14px; border-radius: 20px; border: none; cursor: pointer; font-size: 14px; font-weight: bold; background: #333; color: #fff; }
+        .tab-btn.active { background: #fff; color: #000; }
+        #content { flex: 1; padding: 15px 20px 20px 20px; overflow-y: auto; }
+        .section-title { font-size: 20px; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 4px; }
+        .info-block { margin-bottom: 15px; }
+        .info-label { font-weight: bold; }
+        ul { margin-top: 5px; padding-left: 20px; }
+        .match-card { background: rgba(0,0,0,0.3); border-radius: 8px; padding: 10px; margin-bottom: 10px; }
+        .match-header { display: flex; justify-content: space-between; font-weight: bold; }
+        .match-meta { font-size: 13px; opacity: 0.8; }
+        .badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-left: 5px; background: rgba(0,0,0,0.4); }
+        .scorer { font-size: 14px; margin-left: 10px; }
+        .theme-fcsb { background: radial-gradient(circle at top left, #DA2928, #0046AE 60%, #000 100%); }
+        .theme-dinamo { background: radial-gradient(circle at top left, #D00000, #FFFFFF 40%, #000 100%); color: #000; }
+        .theme-dinamo #header, .theme-dinamo #content { color: #000; }
+        .theme-dinamo .section-title { border-bottom-color: rgba(0,0,0,0.3); }
+        .theme-dinamo .match-card { background: rgba(255,255,255,0.7); }
+    </style>
 </head>
-<body style="background:black; color:white; font-size:30px; text-align:center; padding-top:50px;">
-  Site-ul funcționează!
+<body>
+
+<div id="sidebar">
+    <h2>Echipe</h2>
+    <button class="team-btn fcsb-btn active" data-team="FCSB">FCSB (Steaua)</button>
+    <button class="team-btn dinamo-btn" data-team="Dinamo">Dinamo București</button>
+</div>
+
+<div id="main" class="theme-fcsb">
+    <div id="header">
+        <div>
+            <div id="teamName">FCSB</div>
+            <div id="tagline">Roș-albaștrii – Enciclopedie & Live</div>
+        </div>
+        <div id="status">Actualizare automată…</div>
+    </div>
+    <div id="tabs">
+        <button class="tab-btn active" data-tab="live">Live</button>
+        <button class="tab-btn" data-tab="scorers">Marcatori</button>
+        <button class="tab-btn" data-tab="history">Istoric meciuri</button>
+        <button class="tab-btn" data-tab="info">Enciclopedie</button>
+    </div>
+    <div id="content"></div>
+</div>
+
+<script>
+const teamsData = {
+    "FCSB": { fullName: "Fotbal Club FCSB", nickname: "Roș-albaștrii", founded: "1947", stadium: "Arena Națională", rivals: ["Dinamo București", "Rapid București", "CFR Cluj"], trophies: ["27x Liga I", "24x Cupa României", "1x CCE (1986)", "1x Supercupa Europei"], legends: ["Hagi", "Lăcătuș", "Duckadam"], shortHistory: "Cel mai titrat club din România." },
+    "Dinamo": { fullName: "Dinamo București", nickname: "Câinii Roșii", founded: "1948", stadium: "Stadionul Dinamo", rivals: ["FCSB", "Rapid București"], trophies: ["18x Liga I", "13x Cupa României"], legends: ["Dudu Georgescu", "Cornel Dinu"], shortHistory: "Club istoric cu tradiție și suporteri pasionați." }
+};
+
+function getMockLiveMatches(team) {
+    if (team === "FCSB") return [{ home: "FCSB", away: "CFR Cluj", score: "2 - 1", minute: "78'", competition: "Liga I", status: "LIVE", scorers: ["Coman 23'", "Tănase 55'"] }];
+    if (team === "Dinamo") return [{ home: "Dinamo", away: "Rapid", score: "0 - 0", minute: "34'", competition: "Liga I", status: "LIVE", scorers: [] }];
+    return [];
+}
+
+function getMockHistory(team) {
+    if (team === "FCSB") return [{ opponent: "Dinamo", result: "3 - 2", competition: "Liga I", date: "2024-03-10" }];
+    if (team === "Dinamo") return [{ opponent: "FCSB", result: "1 - 1", competition: "Liga I", date: "2024-03-10" }];
+    return [];
+}
+
+const teamButtons = document.querySelectorAll(".team-btn");
+const tabButtons = document.querySelectorAll(".tab-btn");
+const main = document.getElementById("main");
+const teamNameEl = document.getElementById("teamName");
+const taglineEl = document.getElementById("tagline");
+const contentEl = document.getElementById("content");
+
+let currentTeam = "FCSB";
+let currentTab = "live";
+
+function selectTeam(team) {
+    currentTeam = team;
+    teamButtons.forEach(btn => btn.classList.toggle("active", btn.dataset.team === team));
+    if (team === "FCSB") {
+        main.className = "theme-fcsb";
+        teamNameEl.textContent = "FCSB";
+        taglineEl.textContent = "Roș-albaștrii – Enciclopedie & Live";
+    } else {
+        main.className = "theme-dinamo";
+        teamNameEl.textContent = "Dinamo București";
+        taglineEl.textContent = "Câinii Roșii – Enciclopedie & Live";
+    }
+    renderCurrentTab();
+}
+
+function selectTab(tab) {
+    currentTab = tab;
+    tabButtons.forEach(btn => btn.classList.toggle("active", btn.dataset.tab === tab));
+    renderCurrentTab();
+}
+
+function renderCurrentTab() {
+    contentEl.innerHTML = "";
+    if (currentTab === "live") {
+        const matches = getMockLiveMatches(currentTeam);
+        matches.forEach(m => {
+            contentEl.innerHTML += `<div class='match-card'><b>${m.home} vs ${m.away}</b><br>${m.score} (${m.minute})</div>`;
+        });
+    } else if (currentTab === "info") {
+        const d = teamsData[currentTeam];
+        contentEl.innerHTML = `<h3>${d.fullName}</h3><p>${d.shortHistory}</p><b>Stadion:</b> ${d.stadium}`;
+    } else {
+        contentEl.innerHTML = "<p>Secțiune în lucru...</p>";
+    }
+}
+
+teamButtons.forEach(btn => btn.addEventListener("click", () => selectTeam(btn.dataset.team)));
+tabButtons.forEach(btn => btn.addEventListener("click", () => selectTab(btn.dataset.tab)));
+
+window.onload = () => selectTeam("FCSB");
+</script>
 </body>
 </html>
+ 
