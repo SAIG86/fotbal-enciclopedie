@@ -2,244 +2,160 @@
 <html lang="ro">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eternul Derby - Enciclopedie 2026</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Fotbal Pro - Enciclopedie 2026</title>
     <style>
+        :root { --fcsb-red: #DA2928; --fcsb-blue: #0046AE; --dinamo-red: #D00000; --dinamo-white: #ffffff; --accent: #DA2928; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; font-family: 'Segoe UI', Roboto, sans-serif; background: #050505; color: #fff; min-height: 100vh; overflow-y: auto; overflow-x: hidden; }
+
+        /* NAVIGARE FIXA */
+        #top-bar { position: sticky; top: 0; z-index: 2000; background: #000; border-bottom: 2px solid var(--accent); padding: 10px; transition: 0.5s; }
+        .selector { display: flex; gap: 10px; margin-bottom: 12px; }
+        .btn-e { flex: 1; padding: 18px; border-radius: 14px; border: none; font-weight: 900; text-transform: uppercase; cursor: pointer; transition: 0.4s; font-size: 15px; letter-spacing: 1px; }
         
-        /* Tranzitii de culoare pentru tot site-ul */
-        :root { --main-color: #DA2928; --sec-color: #0046AE; }
+        .fcsb-style { background: linear-gradient(45deg, #DA2928, #0046AE); color: #fff; box-shadow: 0 4px 15px rgba(218, 41, 40, 0.3); }
+        .dinamo-style { background: linear-gradient(45deg, #D00000, #333); color: #fff; border: 1px solid #D00000; box-shadow: 0 4px 15px rgba(208, 0, 0, 0.2); }
         
-        body { 
-            margin: 0; 
-            font-family: 'Segoe UI', Roboto, sans-serif; 
-            background: #000; 
-            color: #fff; 
-            transition: background 0.5s;
-            overflow-x: hidden;
-        }
+        .active-team { transform: scale(1.05); outline: 3px solid #fff; box-shadow: 0 0 25px var(--accent); }
 
-        /* HEADER DINAMIC */
-        #top-nav {
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            background: #111;
-            padding: 10px;
-            border-bottom: 3px solid var(--main-color);
-        }
-
-        .selector-echipe { display: flex; gap: 10px; margin-bottom: 10px; }
-        
-        .btn-echipa {
-            flex: 1;
-            padding: 15px;
-            border-radius: 10px;
-            border: 2px solid transparent;
-            font-weight: 900;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        /* Stiluri specifice per echipa */
-        .theme-fcsb { --main-color: #DA2928; --sec-color: #0046AE; }
-        .theme-dinamo { --main-color: #D00000; --sec-color: #ffffff; }
-
-        .fcsb-btn-style { background: #DA2928; color: white; border-bottom: 4px solid #0046AE; }
-        .dinamo-btn-style { background: #ffffff; color: #D00000; border-bottom: 4px solid #D00000; }
-
-        .active-fcsb { outline: 3px solid #fff; transform: scale(1.02); }
-        .active-dinamo { outline: 3px solid #D00000; transform: scale(1.02); }
-
-        /* TABS */
-        #tabs-container {
-            display: flex;
-            overflow-x: auto;
-            gap: 8px;
-            padding: 5px 0;
-        }
-        #tabs-container::-webkit-scrollbar { display: none; }
-
-        .tab {
-            white-space: nowrap;
-            padding: 10px 20px;
-            border-radius: 20px;
-            background: #222;
-            color: #eee;
-            font-size: 13px;
-            font-weight: bold;
-            border: 1px solid #444;
-        }
-        .tab.active { background: var(--main-color); color: #fff; border-color: #fff; }
+        #tabs { display: flex; overflow-x: auto; gap: 10px; padding: 5px 0; scrollbar-width: none; }
+        #tabs::-webkit-scrollbar { display: none; }
+        .tab { white-space: nowrap; padding: 10px 22px; border-radius: 30px; background: #1a1a1a; color: #888; border: 1px solid #333; font-weight: 700; font-size: 13px; }
+        .tab.active { background: #fff; color: #000; border-color: #fff; }
 
         /* CONTINUT */
-        #content { padding: 15px; line-height: 1.6; }
+        #content { padding: 20px; }
+        .card { background: #111; border-radius: 20px; padding: 20px; margin-bottom: 20px; border: 1px solid #222; box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: relative; overflow: hidden; }
+        .card::before { content: ""; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--accent); }
+
+        h2 { font-size: 24px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+        .news-tag { background: var(--accent); padding: 3px 8px; border-radius: 5px; font-size: 10px; text-transform: uppercase; }
         
-        .card {
-            background: rgba(255,255,255,0.05);
-            border-radius: 15px;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-left: 5px solid var(--main-color);
-        }
+        .news-item { padding: 12px 0; border-bottom: 1px solid #222; }
+        .news-title { font-weight: 700; font-size: 15px; color: #fff; display: block; }
+        .news-time { font-size: 11px; color: #666; }
 
-        .stat-row { 
-            display: flex; 
-            justify-content: space-between; 
-            padding: 10px 0; 
-            border-bottom: 1px solid #222;
-        }
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .stat-box { background: #1a1a1a; padding: 15px; border-radius: 12px; text-align: center; border-bottom: 3px solid var(--accent); }
+        .stat-val { font-size: 22px; font-weight: 900; display: block; }
+        .stat-label { font-size: 11px; color: #888; text-transform: uppercase; }
 
-        .meci-istoric {
-            padding: 12px 0;
-            border-bottom: 1px solid #333;
-        }
-        .meci-data { font-size: 11px; color: #888; text-transform: uppercase; }
-        .meci-scor { font-size: 16px; font-weight: 800; margin: 4px 0; }
-        .meci-detalii { font-size: 13px; color: var(--main-color); font-style: italic; }
-
-        .badge-titlu { background: var(--main-color); padding: 2px 8px; border-radius: 4px; font-weight: bold; }
+        .history-row { padding: 15px 0; border-bottom: 1px solid #222; }
+        .h-scor { font-size: 18px; font-weight: 900; color: var(--accent); }
+        .h-info { font-size: 13px; color: #bbb; }
+        .h-marc { font-size: 12px; color: #00ffcc; font-style: italic; }
     </style>
 </head>
-<body class="theme-fcsb" id="body-site">
+<body class="theme-fcsb">
 
-<div id="top-nav">
-    <div class="selector-echipe">
-        <button id="btn-fcsb" class="btn-echipa fcsb-btn-style active-fcsb">FCSB (Steaua)</button>
-        <button id="btn-dinamo" class="btn-echipa dinamo-btn-style">Dinamo</button>
+<div id="top-bar">
+    <div class="selector">
+        <button id="b-fcsb" class="btn-e fcsb-style active-team">FCSB (Steaua)</button>
+        <button id="b-dinamo" class="btn-e dinamo-style">Dinamo</button>
     </div>
-    <div id="tabs-container">
-        <button class="tab active" data-t="bilant">Bilanț General</button>
-        <button class="tab" data-t="lot">Lot Aprilie 2026</button>
-        <button class="tab" data-t="meciuri">Meciuri Istorice</button>
-        <button class="tab" data-t="palmares">Palmares</button>
+    <div id="tabs">
+        <button class="tab active" data-t="news">Știri Recente</button>
+        <button class="tab" data-t="bilant">Bilanț Derby</button>
+        <button class="tab" data-t="lot">Lotul 2026</button>
+        <button class="tab" data-t="istorie">Meciuri de Aur</button>
     </div>
 </div>
 
 <div id="content"></div>
 
 <script>
-const store = {
+const db = {
     "FCSB": {
-        palmares: [
-            { t: "Campioană România", c: "27 (Record)" },
-            { t: "Cupa României", c: "24" },
-            { t: "Supercupa României", c: "7" },
-            { t: "Cupa Campionilor Europeni", c: "1 (1986)" },
-            { t: "Supercupa Europei", c: "1 (1987)" }
+        accent: "#DA2928",
+        news: [
+            { t: "Darius Olaru, ofertă record din Arabia", h: "Acum 2 ore", d: "Căpitanul ar putea pleca pentru 7 milioane de euro." },
+            { t: "Târnovanu, cel mai bun portar al lunii Martie", h: "Azi dimineață", d: "Intervenții decisive în ultimele 3 etape." }
         ],
-        lot: [
-            { p: "Portar", n: "Ștefan Târnovanu" },
-            { p: "Fundaș", n: "Siyabonga Ngezana" },
-            { p: "Fundaș", n: "Joyskim Dawa" },
-            { p: "Fundaș", n: "Risto Radunovic" },
-            { p: "Mijlocaș", n: "Darius Olaru (C)" },
-            { p: "Mijlocaș", n: "Adrian Șut" },
-            { p: "Mijlocaș", n: "Mihai Lixandru" },
-            { p: "Atacant", n: "Daniel Bîrligea" },
-            { p: "Atacant", n: "Florin Tănase" },
-            { p: "Atacant", n: "David Miculescu" }
-        ],
-        bilant: { v: 67, e: 60, i: 61, goluri: "271 - 253" }
+        bilant: { vic: 68, eg: 60, inf: 61, total: 189, golaveraj: "273 - 254" },
+        lot: ["Șt. Târnovanu (P)", "S. Ngezana (F)", "J. Dawa (F)", "R. Radunovic (F)", "D. Olaru (M)", "A. Șut (M)", "D. Bîrligea (A)", "F. Tănase (A)"],
+        curiozitate: "Steaua '86 este singura echipă din istoria CCE care nu a primit gol în finală (inclusiv la penalty-uri)."
     },
     "Dinamo": {
-        palmares: [
-            { t: "Campioană România", c: "18" },
-            { t: "Cupa României", c: "13" },
-            { t: "Supercupa României", c: "2" },
-            { t: "Semifinală Cupa Campionilor", c: "1 (1984)" },
-            { t: "Semifinală Cupa Cupelor", c: "1 (1990)" }
+        accent: "#D00000",
+        news: [
+            { t: "Zeljko Kopic confirmă noi transferuri", h: "Acum 4 ore", d: "Dinamo caută un fundaș central în Brazilia." },
+            { t: "Sold-out pentru următorul meci în Ștefan cel Mare", h: "Ieri", d: "Fanii au epuizat biletele în 3 ore." }
         ],
-        lot: [
-            { p: "Portar", n: "Adnan Golubovic" },
-            { p: "Fundaș", n: "Kennedy Boateng" },
-            { p: "Fundaș", n: "Josué Homawoo" },
-            { p: "Fundaș", n: "Raul Opruț" },
-            { p: "Mijlocaș", n: "Eddy Gnahoré" },
-            { p: "Mijlocaș", n: "Cătălin Cîrjan" },
-            { p: "Mijlocaș", n: "Patrick Olsen" },
-            { p: "Atacant", n: "Astrit Selmani" },
-            { p: "Atacant", n: "Dennis Politic (C)" },
-            { p: "Atacant", n: "Hakim Abdallah" }
-        ],
-        bilant: { v: 61, e: 60, i: 67, goluri: "253 - 271" }
+        bilant: { vic: 61, eg: 60, inf: 68, total: 189, golaveraj: "254 - 273" },
+        lot: ["A. Golubovic (P)", "K. Boateng (F)", "J. Homawoo (F)", "R. Opruț (F)", "C. Cîrjan (M)", "E. Gnahore (M)", "D. Politic (A)", "A. Selmani (A)"],
+        curiozitate: "Dinamo a fost prima echipă românească care a eliminat o deținătoare de trofeu CCE (Hamburg, 1983)."
     }
 };
 
-const meciuriCelebre = [
-    { d: "20 Octombrie 2024", s: "Dinamo 0 - 2 FCSB", c: "Liga 1", m: "Bîrligea 26', Musi 90+3'" },
-    { d: "30 Octombrie 2024", s: "Dinamo 0 - 4 FCSB", c: "Cupa României", m: "Băluță, Phelipe, Ștefănescu (2)" },
-    { d: "10 Mai 1997", s: "Steaua 5 - 0 Dinamo", c: "Divizia A", m: "Militaru, Ciocoiu (2), Șerban, Baciu" },
-    { d: "1 Decembrie 1990", s: "Steaua 1 - 0 Dinamo", c: "Divizia A", m: "Dan Petrescu" },
-    { d: "9 Septembrie 1989", s: "Steaua 0 - 3 Dinamo", c: "Divizia A", m: "Mateuț, Timofte, Cezar Zamfir" },
-    { d: "21 Noiembrie 1948", s: "CSCA 0 - 1 Dinamo", c: "Primul Derby", m: "Marin Apostol" }
+const meciuri = [
+    { data: "15 Martie 2026", scor: "FCSB 2 - 1 Dinamo", comp: "Liga 1", marc: "Bîrligea '44, Olaru '78 / Selmani '12" },
+    { data: "20 Octombrie 2024", scor: "Dinamo 0 - 2 FCSB", comp: "Liga 1", marc: "Bîrligea '26, Musi '90+3" },
+    { data: "10 Mai 1997", scor: "Steaua 5 - 0 Dinamo", comp: "Divizia A", marc: "Militaru, Ciocoiu (2), Șerban, Baciu" },
+    { data: "1 Decembrie 1990", scor: "Steaua 1 - 0 Dinamo", comp: "Divizia A", marc: "Dan Petrescu '65" },
+    { data: "21 Noiembrie 1948", scor: "CSCA 0 - 1 Dinamo", comp: "Primul Meci", marc: "Marin Apostol '42" }
 ];
 
-let echipaCurenta = "FCSB";
-let tabCurent = "bilant";
+let curE = "FCSB";
+let curT = "news";
 
-function refreshUI() {
-    const main = document.getElementById("body-site");
-    const content = document.getElementById("content");
-    const info = store[echipaCurenta];
-
-    // Update Culori
-    main.className = echipaCurenta === "FCSB" ? "theme-fcsb" : "theme-dinamo";
-    document.getElementById("btn-fcsb").className = "btn-echipa fcsb-btn-style" + (echipaCurenta === "FCSB" ? " active-fcsb" : "");
-    document.getElementById("btn-dinamo").className = "btn-echipa dinamo-btn-style" + (echipaCurenta === "Dinamo" ? " active-dinamo" : "");
+function update() {
+    const info = db[curE];
+    const container = document.getElementById("content");
+    document.documentElement.style.setProperty('--accent', info.accent);
+    
+    document.getElementById("b-fcsb").className = "btn-e fcsb-style" + (curE === "FCSB" ? " active-team" : "");
+    document.getElementById("b-dinamo").className = "btn-e dinamo-style" + (curE === "Dinamo" ? " active-team" : "");
 
     let html = "";
-
-    if (tabCurent === "bilant") {
-        html = `<div class="card"><h2>⚔️ Bilanț în Eternul Derby</h2>
-                <div class="stat-row"><span>Victorii ${echipaCurenta}</span><span class="badge-titlu">${info.bilant.v}</span></div>
-                <div class="stat-row"><span>Egaluri</span><span class="badge-titlu">${info.bilant.e}</span></div>
-                <div class="stat-row"><span>Golaveraj</span><span>${info.bilant.goluri}</span></div>
-                <p style="font-size:12px; margin-top:15px; opacity:0.7;">*Include toate competițiile oficiale (Campionat, Cupă, Supercupă, Cupa Ligii).</p></div>`;
-    } 
-    else if (tabCurent === "lot") {
-        html = `<h2>🏃 Lot Jucători Aprilie 2026</h2>`;
-        info.lot.forEach(j => {
-            html += `<div class="card" style="padding:10px;"><div class="stat-row"><span>${j.n}</span><span style="opacity:0.6">${j.p}</span></div></div>`;
+    if (curT === "news") {
+        html = `<h2><span class="news-tag">Live</span> Știri de Ultimă Oră</h2>`;
+        info.news.forEach(n => {
+            html += `<div class="card"><span class="news-time">${n.h}</span><span class="news-title">${n.t}</span><p style="font-size:13px; color:#aaa; margin:5px 0;">${n.d}</p></div>`;
         });
+        html += `<div class="card" style="background:rgba(255,255,0,0.05)"><h3>💡 Știați că?</h3><p style="font-size:14px;">${info.curiozitate}</p></div>`;
+    } 
+    else if (curT === "bilant") {
+        html = `<h2>Bilanț Complet (189 Meciuri)</h2>
+                <div class="stat-grid">
+                    <div class="stat-box"><span class="stat-val">${info.bilant.vic}</span><span class="stat-label">Victorii</span></div>
+                    <div class="stat-box"><span class="stat-val">${info.bilant.eg}</span><span class="stat-label">Egaluri</span></div>
+                    <div class="stat-box"><span class="stat-val">${info.bilant.inf}</span><span class="stat-label">Înfrângeri</span></div>
+                    <div class="stat-box"><span class="stat-val">${info.bilant.golaveraj}</span><span class="stat-label">Golaveraj</span></div>
+                </div>`;
     }
-    else if (tabCurent === "meciuri") {
-        html = `<h2>📅 Confruntări Istorice</h2><div class="card">`;
-        meciuriCelebre.forEach(m => {
-            html += `<div class="meci-istoric">
-                        <div class="meci-data">${m.d} | ${m.c}</div>
-                        <div class="meci-scor">${m.s}</div>
-                        <div class="meci-detalii">⚽ ${m.m}</div>
+    else if (curT === "lot") {
+        html = `<h2>Lot Oficial - Aprilie 2026</h2><div class="card"><div class="stat-grid">`;
+        info.lot.forEach(j => html += `<div class="stat-box" style="padding:10px; font-size:13px;">${j}</div>`);
+        html += `</div></div>`;
+    }
+    else if (curT === "istorie") {
+        html = `<h2>Arhiva Rezultatelor</h2>`;
+        meciuri.forEach(m => {
+            html += `<div class="card">
+                        <div class="h-info">${m.data} | ${m.comp}</div>
+                        <div class="h-scor">${m.scor}</div>
+                        <div class="h-marc">⚽ ${m.marc}</div>
                     </div>`;
         });
-        html += `</div>`;
-    }
-    else if (tabCurent === "palmares") {
-        html = `<h2>🏆 Palmares Oficial</h2>`;
-        info.palmares.forEach(p => {
-            html += `<div class="card"><div class="stat-row"><span>${p.t}</span><span class="badge-titlu">${p.c}</span></div></div>`;
-        });
     }
 
-    content.innerHTML = html;
+    container.innerHTML = html;
 }
 
-// Event Listeners
-document.getElementById("btn-fcsb").onclick = () => { echipaCurenta = "FCSB"; refreshUI(); };
-document.getElementById("btn-dinamo").onclick = () => { echipaCurenta = "Dinamo"; refreshUI(); };
+document.getElementById("b-fcsb").onclick = () => { curE = "FCSB"; update(); };
+document.getElementById("b-dinamo").onclick = () => { curE = "Dinamo"; update(); };
 
-document.querySelectorAll(".tab").forEach(t => {
-    t.onclick = (e) => {
+document.querySelectorAll(".tab").forEach(btn => {
+    btn.onclick = (e) => {
         document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
         e.target.classList.add("active");
-        tabCurent = e.target.dataset.t;
-        refreshUI();
+        curT = e.target.dataset.t;
+        update();
     };
 });
 
-// Initializare
-refreshUI();
+update();
 </script>
 </body>
 </html>
