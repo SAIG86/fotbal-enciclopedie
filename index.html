@@ -3,7 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Derby FCSB vs Dinamo</title>
+
+<title>Derby Live</title>
+
+<link rel="manifest" href="manifest.json">
 
 <style>
 body{
@@ -13,11 +16,12 @@ body{
   color:#fff;
 }
 
+/* HEADER */
 header{
   padding:10px;
+  background:#111;
   position:sticky;
   top:0;
-  background:#111;
   border-bottom:2px solid red;
 }
 
@@ -30,6 +34,7 @@ header{
   flex:1;
   padding:12px;
   border-radius:10px;
+  text-align:center;
   font-weight:bold;
   cursor:pointer;
 }
@@ -49,8 +54,8 @@ header{
   padding:8px 12px;
   background:#222;
   border-radius:20px;
-  cursor:pointer;
   font-size:12px;
+  cursor:pointer;
 }
 
 .tab.active{
@@ -59,6 +64,7 @@ header{
 
 #content{padding:12px;}
 
+/* CARDS */
 .card{
   background:#151525;
   padding:12px;
@@ -66,6 +72,34 @@ header{
   margin-bottom:10px;
 }
 
+/* LIVE SCORE */
+.score{
+  font-size:24px;
+  font-weight:900;
+  text-align:center;
+}
+
+/* ANIMAȚII */
+.fade{
+  animation:fade .4s ease;
+}
+
+@keyframes fade{
+  from{opacity:0; transform:translateY(10px);}
+  to{opacity:1; transform:translateY(0);}
+}
+
+.pulse{
+  animation:pulse 1s infinite;
+}
+
+@keyframes pulse{
+  0%{transform:scale(1);}
+  50%{transform:scale(1.05);}
+  100%{transform:scale(1);}
+}
+
+/* LISTE */
 .player{
   background:#0f0f20;
   padding:8px;
@@ -90,94 +124,113 @@ header{
   </div>
 
   <div class="tabs">
-    <div class="tab active" onclick="switchTab('home')">Acasă</div>
-    <div class="tab" onclick="switchTab('lot')">Lot</div>
-    <div class="tab" onclick="switchTab('news')">Știri</div>
+    <div class="tab active" onclick="switchTab('home',this)">Acasă</div>
+    <div class="tab" onclick="switchTab('lot',this)">Lot</div>
+    <div class="tab" onclick="switchTab('news',this)">Știri</div>
   </div>
 </header>
 
 <div id="content"></div>
 
 <script>
+let team="FCSB";
+let tab="home";
 
-let team = "FCSB";
-let tab = "home";
+/* ⚠️ PUNE API KEY */
+const API_KEY="PUNE_API_KEY";
 
-const DATA = {
-  FCSB: {
-    name:"FCSB",
-    coach:"Elias Charalambous",
-    stadium:"Arena Națională",
-
-    lot:[
-      "Ștefan Târnovanu (GK)",
-      "Valentin Crețu",
-      "Joyskim Dawa",
-      "Siyabonga Ngezana",
-      "Risto Radunovic",
-      "Darius Olaru",
-      "Adrian Șut",
-      "Florinel Coman",
-      "Octavian Popescu",
-      "David Miculescu",
-      "Daniel Bîrligea"
-    ],
-
-    news:[
-      "FCSB luptă pentru revenirea în play-off sezonul viitor",
-      "Olaru rămâne liderul echipei",
-      "Interes din străinătate pentru Bîrligea"
-    ]
-  },
-
-  DINAMO:{
-    name:"Dinamo",
-    coach:"Zeljko Kopic",
-    stadium:"Arcul de Triumf",
-
-    lot:[
-      "Golubovic (GK)",
-      "Lucas Alves",
-      "Boateng",
-      "Costin",
-      "Țicu",
-      "Cîrjan",
-      "Ghezali",
-      "Politic",
-      "Dennis Politic",
-      "Hakim Abdallah",
-      "Daniel Popa"
-    ],
-
-    news:[
-      "Dinamo stabil în play-off",
-      "Clubul pregătește participarea europeană",
-      "Tineri promovați în prima echipă"
-    ]
-  }
+/* ID echipe (API-Football) */
+const TEAM_ID={
+  FCSB:487,
+  DINAMO:496
 };
 
-function render(){
-  let d = DATA[team];
-  let html = "";
+/* DATE LOCALE (fallback) */
+const DATA={
+FCSB:{
+  coach:"Elias Charalambous",
+  stadium:"Arena Națională",
+  lot:[
+    "Târnovanu","Crețu","Dawa","Ngezana","Radunovic",
+    "Olaru","Șut","Coman","Octavian Popescu",
+    "Miculescu","Bîrligea"
+  ],
+  news:[
+    "FCSB pregătește sezonul viitor",
+    "Interes mare pentru Olaru",
+    "Bîrligea în formă bună"
+  ]
+},
+DINAMO:{
+  coach:"Kopic",
+  stadium:"Arcul de Triumf",
+  lot:[
+    "Golubovic","Boateng","Costin","Țicu",
+    "Cîrjan","Politic","Ghezali",
+    "Popa","Abdallah","Musi"
+  ],
+  news:[
+    "Dinamo în luptă pentru Europa",
+    "Club stabil financiar",
+    "Tineri promovați"
+  ]
+}
+};
+
+/* 🔴 LIVE SCORE */
+async function getLive(){
+  try{
+    let res=await fetch(`https://v3.football.api-sports.io/fixtures?team=${TEAM_ID[team]}&live=all`,{
+      headers:{"x-apisports-key":API_KEY}
+    });
+
+    let data=await res.json();
+    let m=data.response[0];
+
+    if(!m){
+      return "Nu joacă acum";
+    }
+
+    return `
+      <div class="score pulse">
+      ${m.teams.home.name} ${m.goals.home} - ${m.goals.away} ${m.teams.away.name}
+      </div>
+      <div style="text-align:center">Min ${m.fixture.status.elapsed}</div>
+    `;
+  }catch(e){
+    return "Eroare live";
+  }
+}
+
+/* RENDER */
+async function render(){
+  let d=DATA[team];
+  let html="";
 
   if(tab==="home"){
-    html += `
-      <div class="card">
-        <h2>${d.name}</h2>
-        <p>Antrenor: ${d.coach}</p>
-        <p>Stadion: ${d.stadium}</p>
-      </div>
+    let live=await getLive();
 
-      <div class="card">
-        <h3>Derby H2H</h3>
-        <p>FCSB 72 - 57 - 62 Dinamo</p>
-      </div>
+    html+=`
+    <div class="card fade">
+      <h2>${team}</h2>
+      <p>Antrenor: ${d.coach}</p>
+      <p>Stadion: ${d.stadium}</p>
+    </div>
+
+    <div class="card fade">
+      <h3>Scor LIVE</h3>
+      ${live}
+    </div>
+
+    <div class="card fade">
+      <h3>H2H</h3>
+      <p>FCSB 72 - 57 - 62 Dinamo</p>
+    </div>
     `;
   }
 
   if(tab==="lot"){
-    html += `<div class="card"><h3>Lot</h3>`;
+    html+=`<div class="card fade"><h3>Lot</h3>`;
     d.lot.forEach(p=>{
       html+=`<div class="player">${p}</div>`;
     });
@@ -185,32 +238,40 @@ function render(){
   }
 
   if(tab==="news"){
-    html += `<div class="card"><h3>Știri</h3>`;
+    html+=`<div class="card fade"><h3>Știri</h3>`;
     d.news.forEach(n=>{
       html+=`<div class="news">${n}</div>`;
     });
     html+=`</div>`;
   }
 
-  document.getElementById("content").innerHTML = html;
+  document.getElementById("content").innerHTML=html;
 }
 
+/* SWITCH TEAM */
 function switchTeam(t){
   team=t;
+
   document.querySelectorAll(".btn").forEach(b=>b.classList.remove("active"));
   document.querySelectorAll(".btn")[t==="FCSB"?0:1].classList.add("active");
+
   render();
 }
 
-function switchTab(t){
+/* SWITCH TAB */
+function switchTab(t,el){
   tab=t;
+
   document.querySelectorAll(".tab").forEach(b=>b.classList.remove("active"));
-  event.target.classList.add("active");
+  el.classList.add("active");
+
   render();
 }
+
+/* AUTO REFRESH LIVE */
+setInterval(render,15000);
 
 render();
-
 </script>
 
 </body>
