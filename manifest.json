@@ -1,0 +1,22 @@
+{
+  "name": "Eternul Derby",
+  "short_name": "Derby",
+  "description": "FCSB vs Dinamo — Enciclopedie completă",
+  "start_url": "./derby.html",
+  "display": "standalone",
+  "background_color": "#080810",
+  "theme_color": "#DA2928",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/FCSB_Logo.svg/192x192/FCSB_Logo.svg.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/FCSB_Logo.svg/512x512/FCSB_Logo.svg.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
