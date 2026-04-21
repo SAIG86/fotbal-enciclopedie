@@ -1,513 +1,83 @@
-#!/bin/bash
-set -e
-mkdir -p smart-dashboard/backend smart-dashboard/frontend/public smart-dashboard/frontend/src/lib smart-dashboard/frontend/src/pages smart-dashboard/frontend/src/widgets
-cd smart-dashboard
-
-cat > backend/requirements.txt << 'EOF'
-fastapi==0.110.1
-uvicorn==0.25.0
-motor==3.3.1
-pymongo==4.5.0
-pydantic>=2.6.4
-python-dotenv>=1.0.1
-httpx>=0.27.0
-feedparser>=6.0.11
-EOF
-
-cat > backend/.env << 'EOF'
-MONGO_URL=mongodb://localhost:27017
-DB_NAME=dashboard
-CORS_ORIGINS=*
-EOF
-
-cat > backend/server.py << 'PYEOF'
-from fastapi import FastAPI, APIRouter, HTTPException, Query
-from dotenv import load_dotenv
-from starlette.middleware.cors import CORSMiddleware
-from motor.motor_asyncio import AsyncIOMotorClient
-import os, logging, hashlib, uuid, asyncio
-from pathlib import Path
-from pydantic import BaseModel, Field, ConfigDict
-from typing import List, Optional
-from datetime import datetime, timezone, date
-import httpx, feedparser
-
-load_dotenv(Path(__file__).parent / '.env')
-client = AsyncIOMotorClient(os.environ['MONGO_URL'])
-db = client[os.environ['DB_NAME']]
-app = FastAPI()
-api = APIRouter(prefix="/api")
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-class Task(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    text: str
-    done: bool = False
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-class TaskCreate(BaseModel): text: str
-class TaskUpdate(BaseModel):
-    text: Optional[str] = None
-    done: Optional[bool] = None
-
-@api.get("/tasks", response_model=List[Task])
-async def list_tasks():
-    items = await db.tasks.find({}, {"_id": 0}).sort("created_at", -1).to_list(500)
-    for it in items:
-        if isinstance(it.get('created_at'), str):
-            it['created_at'] = datetime.fromisoformat(it['created_at'])
-    return items
-
-@api.post("/tasks", response_model=Task)
-async def create_task(body: TaskCreate):
-    t = Task(text=body.text); d = t.model_dump(); d['created_at'] = d['created_at'].isoformat()
-    await db.tasks.insert_one(d); return t
-
-@api.patch("/tasks/{tid}", response_model=Task)
-async def update_task(tid: str, body: TaskUpdate):
-    upd = {k: v for k, v in body.model_dump().items() if v is not None}
-    if not upd: raise HTTPException(400, "No fields")
-    r = await db.tasks.find_one_and_update({"id": tid}, {"$set": upd}, return_document=True, projection={"_id": 0})
-    if not r: raise HTTPException(404)
-    if isinstance(r.get('created_at'), str): r['created_at'] = datetime.fromisoformat(r['created_at'])
-    return r
-
-@api.delete("/tasks/{tid}")
-async def del_task(tid: str):
-    r = await db.tasks.delete_one({"id": tid})
-    if r.deleted_count == 0: raise HTTPException(404)
-    return {"ok": True}
-
-W2W = {"113":0,"116":2,"119":3,"122":3,"143":45,"176":51,"179":71,"182":71,"185":51,"200":95,"227":71,"230":75,"248":48,"260":48,"263":51,"266":51,"281":56,"284":57,"293":61,"296":61,"299":63,"302":63,"305":65,"308":65,"311":66,"314":67,"317":67,"320":71,"323":71,"326":73,"329":73,"332":75,"335":75,"338":75,"350":67,"353":80,"356":81,"359":82,"362":85,"365":85,"368":85,"371":86,"374":67,"377":67,"386":95,"389":96,"392":95,"395":99}
-
-@api.get("/weather")
-async def weather(lat: float = Query(...), lon: float = Query(...)):
-    try:
-        async with httpx.AsyncClient(timeout=12.0, headers={"User-Agent": "curl/7.88"}) as c:
-            r = await c.get(f"https://wttr.in/{lat},{lon}?format=j1"); r.raise_for_status(); raw = r.json()
-    except Exception as e:
-        logger.error(e); raise HTTPException(502, "Weather unavailable")
-    try:
-        cc = raw["current_condition"][0]
-        code = W2W.get(cc.get("weatherCode","113"), 3)
-        ht, hp, hc = [], [], []
-        for day in raw.get("weather",[])[:2]:
-            dd = day.get("date","")
-            for h in day.get("hourly",[]):
-                hi = int(h.get("time","0"))//100
-                ht.append(f"{dd} {hi:02d}:00"); hp.append(float(h.get("tempC",0))); hc.append(W2W.get(h.get("weatherCode","113"),3))
-        nh = datetime.now().hour; td = datetime.now().date().isoformat()
-        ft, fp, fc = [], [], []
-        for t, tp, c_ in zip(ht, hp, hc):
-            dd, hh = t.split(" ")[0], int(t.split(" ")[1].split(":")[0])
-            if dd > td or (dd == td and hh >= nh): ft.append(t); fp.append(tp); fc.append(c_)
-        return {"current": {"temperature_2m": float(cc.get("temp_C",0)), "apparent_temperature": float(cc.get("FeelsLikeC",0)), "relative_humidity_2m": int(cc.get("humidity",0)), "weather_code": code, "wind_speed_10m": float(cc.get("windspeedKmph",0)), "is_day": 1, "description": cc.get("weatherDesc",[{}])[0].get("value","")}, "hourly": {"time": [t.split(" ")[1] for t in ft[:8]], "temperature_2m": fp[:8], "weather_code": fc[:8]}}
-    except Exception as e:
-        logger.error(e); raise HTTPException(502, "Parse error")
-
-@api.get("/geocode")
-async def geocode(q: str = Query(..., min_length=1)):
-    try:
-        async with httpx.AsyncClient(timeout=10.0) as c:
-            r = await c.get(f"https://geocoding-api.open-meteo.com/v1/search?name={q}&count=5&language=ro&format=json"); r.raise_for_status()
-            return {"results": [{"name":i.get("name"),"country":i.get("country"),"admin1":i.get("admin1"),"latitude":i.get("latitude"),"longitude":i.get("longitude")} for i in (r.json().get("results") or [])]}
-    except Exception as e:
-        logger.error(e); raise HTTPException(502, "Geocode unavailable")
-
-RSS = {"generale":["https://www.digi24.ro/rss","https://www.news.ro/feed"],"sport":["https://www.digi24.ro/rss/sport","https://www.gsp.ro/rss/index.xml"],"politica":["https://www.digi24.ro/rss/politica"],"showbiz":["https://www.cancan.ro/feed"]}
-
-def _pf(u):
-    try:
-        d = feedparser.parse(u)
-        return [{"title":e.get("title","").strip(),"link":e.get("link",""),"published":e.get("published",""),"summary":(e.get("summary","") or "").strip()[:200],"source":d.feed.get("title","")} for e in d.entries[:15]]
-    except: return []
-
-@api.get("/news")
-async def news(category: str = Query("generale")):
-    urls = RSS.get(category.lower())
-    if not urls: raise HTTPException(400)
-    loop = asyncio.get_event_loop()
-    res = await asyncio.gather(*[loop.run_in_executor(None, _pf, u) for u in urls])
-    m, s, u = [], set(), []
-    for x in res: m.extend(x)
-    for i in m:
-        t = i["title"].lower()
-        if t and t not in s: s.add(t); u.append(i)
-    return {"category": category, "items": u[:25]}
-
-LEAGUES = {"liga1_ro":{"id":"4691","name":"SuperLiga RO"},"premier_league":{"id":"4328","name":"Premier League"},"la_liga":{"id":"4335","name":"La Liga"},"serie_a":{"id":"4332","name":"Serie A"},"bundesliga":{"id":"4331","name":"Bundesliga"},"ligue_1":{"id":"4334","name":"Ligue 1"}}
-TSDB = "https://www.thesportsdb.com/api/v1/json/3"
-
-@api.get("/football/leagues")
-async def fl(): return {"leagues":[{"key":k,**v} for k,v in LEAGUES.items()]}
-
-async def _tg(c, p):
-    try:
-        r = await c.get(f"{TSDB}{p}", timeout=10.0); return r.json() if r.status_code==200 else None
-    except: return None
-
-@api.get("/football/standings")
-async def fs(league: str = Query(...)):
-    if league not in LEAGUES: raise HTTPException(400)
-    lid = LEAGUES[league]["id"]
-    async with httpx.AsyncClient() as c:
-        for s in ["2025-2026","2024-2025"]:
-            d = await _tg(c, f"/lookuptable.php?l={lid}&s={s}")
-            rows = (d or {}).get("table") or []
-            if rows:
-                return {"league":league,"season":s,"table":[{"rank":int(r.get("intRank") or 0),"team":r.get("strTeam"),"badge":r.get("strBadge"),"played":int(r.get("intPlayed") or 0),"win":int(r.get("intWin") or 0),"draw":int(r.get("intDraw") or 0),"loss":int(r.get("intLoss") or 0),"goals_for":int(r.get("intGoalsFor") or 0),"goals_against":int(r.get("intGoalsAgainst") or 0),"goal_diff":int(r.get("intGoalDifference") or 0),"points":int(r.get("intPoints") or 0)} for r in rows]}
-    return {"league":league,"season":None,"table":[]}
-
-def _em(e):
-    return {"id":e.get("idEvent"),"home":e.get("strHomeTeam"),"away":e.get("strAwayTeam"),"home_badge":e.get("strHomeTeamBadge"),"away_badge":e.get("strAwayTeamBadge"),"home_score":e.get("intHomeScore"),"away_score":e.get("intAwayScore"),"date":e.get("dateEvent"),"time":(e.get("strTime") or "")[:5],"status":e.get("strStatus") or e.get("strProgress")}
-
-@api.get("/football/matches")
-async def fm(league: str = Query(...), type: str = Query("upcoming")):
-    if league not in LEAGUES: raise HTTPException(400)
-    lid = LEAGUES[league]["id"]; td = date.today().isoformat()
-    async with httpx.AsyncClient() as c:
-        ev = []
-        for s in ["2025-2026","2024-2025"]:
-            d = await _tg(c, f"/eventsseason.php?id={lid}&s={s}")
-            x = (d or {}).get("events") or []
-            if x: ev = x; break
-    hs = lambda e: e.get("intHomeScore") not in (None,"") and e.get("intAwayScore") not in (None,"")
-    if type == "past":
-        f = [e for e in ev if hs(e)]; f.sort(key=lambda x:(x.get("dateEvent") or "",x.get("strTime") or ""), reverse=True); sel = f[:20]
-    elif type == "live":
-        t = [e for e in ev if e.get("dateEvent")==td]; t.sort(key=lambda x:(0 if not hs(x) else 1, x.get("strTime") or "")); sel = t[:15]
-        if not sel:
-            async with httpx.AsyncClient() as c:
-                ls = await _tg(c, f"/livescore.php?l={lid}"); sel = (ls or {}).get("events") or []
-    else:
-        u = [e for e in ev if not hs(e) and (e.get("dateEvent") or "") >= td]; u.sort(key=lambda x:(x.get("dateEvent") or "", x.get("strTime") or "")); sel = u[:20]
-    return {"league":league,"type":type,"matches":[_em(e) for e in sel]}
-
-QS = [{"q":"Singurul mod de a face o treabă grozavă este să iubești ceea ce faci.","a":"Steve Jobs"},{"q":"Nu aștepta. Timpul nu va fi niciodată potrivit.","a":"Napoleon Hill"},{"q":"Călătoria de o mie de mile începe cu un singur pas.","a":"Lao Tzu"},{"q":"Viața este ceea ce ți se întâmplă în timp ce îți faci alte planuri.","a":"John Lennon"},{"q":"Fii tu însuți; toți ceilalți sunt deja ocupați.","a":"Oscar Wilde"},{"q":"Cel mai bun moment să plantezi un copac a fost acum 20 de ani. Al doilea cel mai bun moment este acum.","a":"Proverb chinezesc"},{"q":"Succesul nu e final, eșecul nu e fatal: curajul de a continua contează.","a":"Winston Churchill"},{"q":"Fii schimbarea pe care vrei să o vezi în lume.","a":"Mahatma Gandhi"},{"q":"Dacă poți să visezi, poți să o faci.","a":"Walt Disney"},{"q":"Nu judeca fiecare zi după recolta pe care o strângi, ci după semințele pe care le plantezi.","a":"R. L. Stevenson"},{"q":"Mintea este totul. Ceea ce gândești, aceea devii.","a":"Buddha"},{"q":"Nu număra zilele, fă ca zilele să conteze.","a":"Muhammad Ali"},{"q":"Perfecțiunea nu e atinsă când nu mai ai nimic de adăugat, ci când nu mai ai nimic de îndepărtat.","a":"A. de Saint-Exupéry"},{"q":"Dacă vrei să mergi repede, mergi singur. Dacă vrei să ajungi departe, mergi împreună.","a":"Proverb african"}]
-
-@api.get("/quotes/today")
-async def qt():
-    s = date.today().isoformat()
-    return {"date": s, **QS[int(hashlib.md5(s.encode()).hexdigest(),16) % len(QS)]}
-
-@api.get("/")
-async def root(): return {"message":"Dashboard API OK"}
-
-app.include_router(api)
-app.add_middleware(CORSMiddleware, allow_credentials=True, allow_origins=os.environ.get('CORS_ORIGINS','*').split(','), allow_methods=["*"], allow_headers=["*"])
-
-@app.on_event("shutdown")
-async def sdc(): client.close()
-PYEOF
-
-cat > frontend/package.json << 'EOF'
-{
-  "name": "smart-dashboard-frontend",
-  "version": "0.1.0",
-  "private": true,
-  "dependencies": {
-    "axios": "^1.8.4",
-    "lucide-react": "^0.507.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "react-scripts": "5.0.1",
-    "sonner": "^2.0.3"
-  },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build"
-  },
-  "browserslist": {
-    "production": [">0.2%", "not dead", "not op_mini all"],
-    "development": ["last 1 chrome version", "last 1 firefox version", "last 1 safari version"]
-  },
-  "devDependencies": {
-    "autoprefixer": "^10.4.20",
-    "postcss": "^8.4.49",
-    "tailwindcss": "^3.4.17"
-  }
-}
-EOF
-
-cat > frontend/.env << 'EOF'
-REACT_APP_BACKEND_URL=http://localhost:8001
-EOF
-
-cat > frontend/tailwind.config.js << 'EOF'
-module.exports = { content: ["./src/**/*.{js,jsx,ts,tsx}", "./public/index.html"], theme: { extend: {} }, plugins: [] };
-EOF
-
-cat > frontend/postcss.config.js << 'EOF'
-module.exports = { plugins: { tailwindcss: {}, autoprefixer: {} } };
-EOF
-
-cat > frontend/public/index.html << 'EOF'
 <!DOCTYPE html>
 <html lang="ro">
-<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>Dashboard Personal</title></head>
-<body><div id="root"></div></body>
-</html>
-EOF
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Dashboard S25 Ultra</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600&display=swap" rel="stylesheet">
+    <style>
+        :root { --negru: #050505; --rosu: #CE1126; --galben: #FCD116; --albastru: #002B7F; }
+        body { background: var(--negru); color: white; font-family: 'Outfit', sans-serif; margin: 0; padding: 15px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; }
+        .card { background: #121212; border: 1px solid #222; border-radius: 24px; padding: 20px; position: relative; overflow: hidden; }
+        .accent-b { border-top: 4px solid var(--albastru); }
+        .accent-r { border-top: 4px solid var(--rosu); }
+        .accent-g { border-top: 4px solid var(--galben); }
+        h2 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; color: #555; margin-bottom: 15px; }
+        #ceas { font-size: 5rem; font-weight: 600; color: var(--galben); line-height: 1; }
+        #data { color: var(--albastru); font-size: 1.1rem; margin-bottom: 20px; }
+        input { background: #1a1a1a; border: 1px solid #333; color: white; padding: 12px; border-radius: 12px; width: 80%; margin-bottom: 10px; }
+        button { background: var(--albastru); border: none; color: white; padding: 10px 20px; border-radius: 12px; cursor: pointer; font-weight: 600; }
+        .match, .news { border-bottom: 1px solid #222; padding: 10px 0; font-size: 0.9rem; }
+        .live { color: var(--rosu); font-weight: bold; animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0.5; } }
+    </style>
+</head>
+<body>
 
-cat > frontend/src/index.js << 'EOF'
-import React from "react";
-import ReactDOM from "react-dom/client";
-import "./index.css";
-import App from "./App";
-ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-EOF
+    <div id="ceas">00:00</div>
+    <div id="data">Încarcare...</div>
 
-cat > frontend/src/index.css << 'EOF'
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&family=Manrope:wght@300;400;500;600;700&display=swap');
-* { box-sizing: border-box; }
-html, body, #root { height: 100%; }
-body { margin: 0; background: #040914; color: #fff; font-family: 'Manrope', system-ui, sans-serif; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
-.font-heading { font-family: 'Outfit', system-ui, sans-serif; }
-.glass-card { position: relative; overflow: hidden; background: rgba(255,255,255,0.03); backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); border: 1px solid rgba(255,255,255,0.10); border-radius: 2rem; box-shadow: 0 8px 32px rgba(0,0,0,0.3); transition: background-color .3s, border-color .3s; }
-.glass-card:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.20); }
-.dashboard-bg { position: fixed; inset: 0; z-index: 0; background-image: url('https://images.unsplash.com/photo-1762529370608-77e3e376bac8?w=1920&q=85'); background-size: cover; background-position: center; }
-.dashboard-bg::after { content: ''; position: absolute; inset: 0; background: rgba(0,0,0,0.55); }
-.live-dot { width: 8px; height: 8px; border-radius: 9999px; background: #10B981; animation: lp 1.6s infinite; }
-@keyframes lp { 0% { box-shadow: 0 0 0 0 rgba(16,185,129,0.7); } 70% { box-shadow: 0 0 0 10px rgba(16,185,129,0); } 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); } }
-.subtle-scroll::-webkit-scrollbar { width: 6px; }
-.subtle-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 9999px; }
-@keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
-.rise-in { animation: rise .7s cubic-bezier(0.4,0,0.2,1) both; }
-EOF
-
-cat > frontend/src/App.css << 'EOF'
-.App { min-height: 100vh; }
-EOF
-
-cat > frontend/src/App.js << 'EOF'
-import "./App.css";
-import Dashboard from "./pages/Dashboard";
-import { Toaster } from "sonner";
-export default function App() {
-  return (<div className="App"><Dashboard /><Toaster position="top-right" theme="dark" /></div>);
-}
-EOF
-
-cat > frontend/src/lib/api.js << 'EOF'
-import axios from "axios";
-export const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
-export const api = axios.create({ baseURL: API, timeout: 15000 });
-EOF
-
-cat > frontend/src/pages/Dashboard.jsx << 'EOF'
-import ClockWidget from "../widgets/ClockWidget";
-import WeatherWidget from "../widgets/WeatherWidget";
-import TasksWidget from "../widgets/TasksWidget";
-import NewsWidget from "../widgets/NewsWidget";
-import FootballWidget from "../widgets/FootballWidget";
-import QuoteWidget from "../widgets/QuoteWidget";
-export default function Dashboard() {
-  return (
-    <div className="relative min-h-screen w-full">
-      <div className="dashboard-bg" />
-      <div className="relative z-10 w-full min-h-screen p-4 md:p-8">
-        <div className="mx-auto max-w-7xl grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6">
-          <div className="md:col-span-8 rise-in"><ClockWidget /></div>
-          <div className="md:col-span-4 rise-in"><WeatherWidget /></div>
-          <div className="md:col-span-4 rise-in"><TasksWidget /></div>
-          <div className="md:col-span-4 rise-in"><NewsWidget /></div>
-          <div className="md:col-span-4 rise-in"><FootballWidget /></div>
-          <div className="md:col-span-12 rise-in"><QuoteWidget /></div>
+    <div class="grid">
+        <div class="card accent-b">
+            <h2>Vremea Pantelimon</h2>
+            <a class="weatherwidget-io" href="https://forecast7.com/ro/44a4526a21/pantelimon/" data-label_1="PANTELIMON" data-theme="pure" data-basecolor="#121212" data-accent="var(--galben)" data-textcolor="#ffffff" >Vremea Pantelimon</a>
         </div>
-      </div>
-    </div>
-  );
-}
-EOF
 
-cat > frontend/src/widgets/ClockWidget.jsx << 'EOF'
-import { useEffect, useState } from "react";
-const W=["Duminică","Luni","Marți","Miercuri","Joi","Vineri","Sâmbătă"];
-const M=["Ianuarie","Februarie","Martie","Aprilie","Mai","Iunie","Iulie","August","Septembrie","Octombrie","Noiembrie","Decembrie"];
-const g=h=>h<5?"Noapte bună":h<12?"Bună dimineața":h<18?"Bună ziua":h<22?"Bună seara":"Noapte bună";
-export default function ClockWidget() {
-  const [n,sN]=useState(new Date());
-  useEffect(()=>{const t=setInterval(()=>sN(new Date()),1000);return()=>clearInterval(t);},[]);
-  const hh=String(n.getHours()).padStart(2,"0"),mm=String(n.getMinutes()).padStart(2,"0"),ss=String(n.getSeconds()).padStart(2,"0");
-  return (
-    <div className="glass-card p-6 md:p-10 h-full flex flex-col justify-center">
-      <p className="text-white/60 text-sm uppercase tracking-[0.25em] font-medium">{g(n.getHours())}</p>
-      <div className="font-heading font-light tracking-tighter leading-none mt-2 text-white" style={{fontSize:"clamp(4rem,12vw,10rem)"}}>
-        {hh}<span className="text-white/40">:</span>{mm}
-        <span className="text-emerald-400/70 text-4xl md:text-5xl align-top ml-2">{ss}</span>
-      </div>
-      <p className="mt-2 text-white/80 text-lg md:text-2xl font-heading font-light">{W[n.getDay()]}, {n.getDate()} {M[n.getMonth()]} {n.getFullYear()}</p>
-    </div>
-  );
-}
-EOF
+        <div class="card accent-r">
+            <h2>Fotbal Live</h2>
+            <div id="scores">
+                <div class="match">Liga 1: FCSB - Rapid <span class="live">LIVE (1-1)</span></div>
+                <div class="match">Premier League: Man. City - Arsenal (22:00)</div>
+                <div class="match">La Liga: Real Madrid - Barca (Final 3-2)</div>
+            </div>
+        </div>
 
-cat > frontend/src/widgets/WeatherWidget.jsx << 'EOF'
-import { useEffect, useMemo, useState } from "react";
-import { api } from "../lib/api";
-import { Cloud, CloudRain, CloudSnow, Sun, CloudLightning, CloudFog, Wind, Droplets, MapPin, Search } from "lucide-react";
-const P=[{name:"București",lat:44.4268,lon:26.1025},{name:"Pantelimon",lat:44.4497,lon:26.2103}];
-function m(c){c=+c;if(c===0)return{Icon:Sun,label:"Senin"};if([1,2].includes(c))return{Icon:Sun,label:"Parțial noros"};if(c===3)return{Icon:Cloud,label:"Noros"};if([45,48].includes(c))return{Icon:CloudFog,label:"Ceață"};if([51,53,55,56,57].includes(c))return{Icon:CloudRain,label:"Burniță"};if([61,63,65,80,81,82].includes(c))return{Icon:CloudRain,label:"Ploaie"};if([66,67].includes(c))return{Icon:CloudRain,label:"Ploaie înghețată"};if([71,73,75,77,85,86].includes(c))return{Icon:CloudSnow,label:"Ninsoare"};if([95,96,99].includes(c))return{Icon:CloudLightning,label:"Furtună"};return{Icon:Cloud,label:"—"};}
-export default function WeatherWidget() {
-  const [c,sC]=useState(()=>{const s=localStorage.getItem("dc");return s?JSON.parse(s):P[0];});
-  const [d,sD]=useState(null);const [s,sS]=useState("");const [r,sR]=useState([]);const [o,sO]=useState(false);
-  useEffect(()=>{localStorage.setItem("dc",JSON.stringify(c));api.get("/weather",{params:{lat:c.lat,lon:c.lon}}).then(x=>sD(x.data)).catch(()=>sD(null));},[c]);
-  const ds=async e=>{e?.preventDefault();if(!s.trim())return;try{const x=await api.get("/geocode",{params:{q:s.trim()}});sR(x.data.results||[]);}catch{sR([]);}};
-  const cc=d?.current,M=cc?m(cc.weather_code):null,Ic=M?.Icon||Cloud;
-  const hy=useMemo(()=>!d?.hourly?[]:d.hourly.time.slice(0,8).map((t,i)=>({time:t.slice(-5),temp:Math.round(d.hourly.temperature_2m[i]),code:d.hourly.weather_code[i]})),[d]);
-  return (
-    <div className="glass-card p-6 h-full flex flex-col">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-white/60 text-xs uppercase tracking-widest font-medium"><MapPin className="w-3.5 h-3.5"/>Vremea</div>
-        <button onClick={()=>sO(x=>!x)} className="text-white/50 hover:text-white text-xs flex items-center gap-1 px-2 py-1 rounded-full hover:bg-white/10"><Search className="w-3 h-3"/>Alege oraș</button>
-      </div>
-      {o && (<div className="mt-3 space-y-2">
-        <form onSubmit={ds} className="flex gap-2">
-          <input value={s} onChange={e=>sS(e.target.value)} placeholder="Caută oraș..." className="flex-1 bg-white/5 border border-white/10 rounded-full px-4 py-2 text-sm text-white placeholder-white/40 focus:outline-none focus:border-white/30"/>
-          <button type="submit" className="bg-white text-black text-sm px-4 py-2 rounded-full font-medium">Caută</button>
-        </form>
-        <div className="flex flex-wrap gap-2">{P.map(p=><button key={p.name} onClick={()=>{sC(p);sO(false);sR([]);}} className="text-xs px-3 py-1 rounded-full bg-white/5 hover:bg-white/15 text-white/80">{p.name}</button>)}</div>
-        {r.length>0 && <ul className="space-y-1 max-h-40 overflow-auto subtle-scroll">{r.map((x,i)=><li key={i}><button onClick={()=>{sC({name:x.name,lat:x.latitude,lon:x.longitude});sO(false);sR([]);sS("");}} className="w-full text-left text-sm px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10">{x.name}<span className="text-white/40"> · {x.admin1?`${x.admin1}, `:""}{x.country}</span></button></li>)}</ul>}
-      </div>)}
-      <div className="mt-4 flex items-start justify-between">
-        <div><p className="text-white text-xl font-heading font-medium">{c.name}</p><p className="text-white/50 text-xs mt-0.5">{M?.label||"—"}</p></div>
-        <Ic className="w-12 h-12 text-sky-300" strokeWidth={1.2}/>
-      </div>
-      <div className="mt-2 flex items-end gap-3">
-        <span className="font-heading font-light text-white text-6xl md:text-7xl leading-none tracking-tight">{!cc?"--":Math.round(cc.temperature_2m)}</span>
-        <span className="text-white/60 text-2xl mb-2 font-heading">°C</span>
-      </div>
-      {cc && <div className="mt-2 flex gap-4 text-white/60 text-xs"><span className="flex items-center gap-1"><Droplets className="w-3 h-3"/>{cc.relative_humidity_2m}%</span><span className="flex items-center gap-1"><Wind className="w-3 h-3"/>{Math.round(cc.wind_speed_10m)} km/h</span><span>Resimțit {Math.round(cc.apparent_temperature)}°</span></div>}
-      <div className="mt-4 pt-4 border-t border-white/10 flex gap-3 overflow-x-auto subtle-scroll">
-        {hy.map((h,i)=>{const HI=m(h.code).Icon;return <div key={i} className="flex flex-col items-center gap-1 min-w-[48px]"><span className="text-white/40 text-[10px]">{h.time}</span><HI className="w-4 h-4 text-sky-300" strokeWidth={1.4}/><span className="text-white text-sm font-medium">{h.temp}°</span></div>;})}
-      </div>
-    </div>
-  );
-}
-EOF
+        <div class="card accent-g">
+            <h2>Știri România</h2>
+            <div id="news-list">
+                <div class="news">Se încarcă cele mai noi știri de pe Digi24...</div>
+            </div>
+        </div>
 
-cat > frontend/src/widgets/TasksWidget.jsx << 'EOF'
-import { useEffect, useState } from "react";
-import { api } from "../lib/api";
-import { Check, Plus, Trash2, ListTodo } from "lucide-react";
-export default function TasksWidget() {
-  const [t,sT]=useState([]);const [x,sX]=useState("");const [l,sL]=useState(true);
-  useEffect(()=>{(async()=>{try{const r=await api.get("/tasks");sT(r.data);}catch{}finally{sL(false);}})();},[]);
-  const a=async e=>{e.preventDefault();const v=x.trim();if(!v)return;try{const r=await api.post("/tasks",{text:v});sT(p=>[r.data,...p]);sX("");}catch{}};
-  const g=async i=>{try{const r=await api.patch(`/tasks/${i.id}`,{done:!i.done});sT(p=>p.map(z=>z.id===i.id?r.data:z));}catch{}};
-  const d=async i=>{try{await api.delete(`/tasks/${i.id}`);sT(p=>p.filter(z=>z.id!==i.id));}catch{}};
-  const rm=t.filter(z=>!z.done).length;
-  return (
-    <div className="glass-card p-6 h-full flex flex-col">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-white/60 text-xs uppercase tracking-widest font-medium"><ListTodo className="w-3.5 h-3.5"/>Task-uri</div>
-        <span className="text-white/50 text-xs">{rm} de făcut · {t.length} total</span>
-      </div>
-      <form onSubmit={a} className="mt-4 flex gap-2">
-        <input value={x} onChange={e=>sX(e.target.value)} placeholder="Ce ai de făcut astăzi?" className="flex-1 bg-transparent border-b border-white/15 focus:border-white/50 text-white placeholder-white/40 py-2 focus:outline-none text-sm"/>
-        <button type="submit" className="bg-white text-black rounded-full w-9 h-9 flex items-center justify-center"><Plus className="w-4 h-4"/></button>
-      </form>
-      <ul className="mt-4 space-y-2 max-h-[320px] overflow-y-auto subtle-scroll pr-1">
-        {l && <li className="text-white/40 text-sm">Se încarcă…</li>}
-        {!l && t.length===0 && <li className="text-white/40 text-sm">Nicio sarcină. Adaugă una ↑</li>}
-        {t.map(z=>(
-          <li key={z.id} className="group flex items-center gap-3 p-2 rounded-xl hover:bg-white/5">
-            <button onClick={()=>g(z)} className={`shrink-0 w-5 h-5 rounded-full border flex items-center justify-center ${z.done?"bg-emerald-500 border-emerald-500":"border-white/30 hover:border-white/60"}`}>{z.done && <Check className="w-3 h-3 text-white" strokeWidth={3}/>}</button>
-            <span className={`flex-1 text-sm ${z.done?"line-through text-white/40":"text-white/90"}`}>{z.text}</span>
-            <button onClick={()=>d(z)} className="opacity-0 group-hover:opacity-100 text-white/40 hover:text-red-400"><Trash2 className="w-4 h-4"/></button>
-          </li>
-        ))}
-      </ul>
+        <div class="card">
+            <h2>Task-uri</h2>
+            <input type="text" id="tIn" placeholder="Adaugă task...">
+            <button onclick="addT()">+</button>
+            <div id="tList"></div>
+        </div>
     </div>
-  );
-}
-EOF
 
-cat > frontend/src/widgets/NewsWidget.jsx << 'EOF'
-import { useEffect, useState } from "react";
-import { api } from "../lib/api";
-import { Newspaper, ExternalLink } from "lucide-react";
-const C=[{k:"generale",l:"Generale"},{k:"sport",l:"Sport"},{k:"politica",l:"Politică"},{k:"showbiz",l:"Showbiz"}];
-export default function NewsWidget() {
-  const [c,sC]=useState("generale");const [i,sI]=useState([]);const [l,sL]=useState(true);
-  useEffect(()=>{sL(true);api.get("/news",{params:{category:c}}).then(r=>sI(r.data.items||[])).catch(()=>sI([])).finally(()=>sL(false));},[c]);
-  return (
-    <div className="glass-card p-6 h-full flex flex-col">
-      <div className="flex items-center gap-2 text-white/60 text-xs uppercase tracking-widest font-medium"><Newspaper className="w-3.5 h-3.5"/>Știri</div>
-      <div className="mt-3 flex flex-wrap gap-1.5">{C.map(x=>{const a=c===x.k;return <button key={x.k} onClick={()=>sC(x.k)} className={`text-xs px-3 py-1.5 rounded-full font-medium ${a?"bg-white text-black":"bg-white/10 text-white/60 hover:bg-white/15"}`}>{x.l}</button>;})}</div>
-      <ul className="mt-4 space-y-3 max-h-[360px] overflow-y-auto subtle-scroll pr-1">
-        {l && <li className="text-white/40 text-sm">Se încarcă…</li>}
-        {!l && i.length===0 && <li className="text-white/40 text-sm">Nicio știre.</li>}
-        {i.map((n,k)=>(
-          <li key={k}><a href={n.link} target="_blank" rel="noopener noreferrer" className="group block">
-            <p className="text-white/90 text-sm group-hover:text-white flex gap-2"><span className="flex-1">{n.title}</span><ExternalLink className="w-3 h-3 mt-1 text-white/30 group-hover:text-white/70 shrink-0"/></p>
-            {n.source && <p className="text-white/40 text-[11px] mt-0.5">{n.source}</p>}
-          </a></li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-EOF
+    <script>
+        function update() {
+            const n = new Date();
+            document.getElementById('ceas').innerText = n.toLocaleTimeString('ro-RO', {hour: '2-digit', minute:'2-digit'});
+            document.getElementById('data').innerText = n.toLocaleDateString('ro-RO', {weekday:'long', day:'numeric', month:'long'});
+        }
+        setInterval(update, 1000); update();
 
-cat > frontend/src/widgets/FootballWidget.jsx << 'EOF'
-import { useEffect, useState } from "react";
-import { api } from "../lib/api";
-import { Trophy, Radio } from "lucide-react";
-const L=[{k:"liga1_ro",l:"Liga 1 RO"},{k:"premier_league",l:"Premier L."},{k:"la_liga",l:"La Liga"},{k:"serie_a",l:"Serie A"},{k:"bundesliga",l:"Bundesliga"},{k:"ligue_1",l:"Ligue 1"}];
-const T=[{k:"live",l:"Live"},{k:"past",l:"Rezultate"},{k:"standings",l:"Clasament"}];
-function R({m,lv}){const s=m.home_score!=null&&m.away_score!=null;return(
-  <div className="flex items-center justify-between gap-2 py-2 border-b border-white/5 last:border-0">
-    <div className="flex-1 min-w-0"><p className="text-white/90 text-sm truncate">{m.home}</p><p className="text-white/90 text-sm truncate">{m.away}</p></div>
-    <div className="text-right">{s?<div className="text-white font-heading font-medium leading-tight"><div>{m.home_score}</div><div>{m.away_score}</div></div>:<div className="text-white/50 text-xs leading-tight"><div>{m.date?.slice(5)||"--"}</div><div>{m.time||"--:--"}</div></div>}</div>
-    {lv && <div className="flex items-center gap-1 text-emerald-400 text-[10px] uppercase"><span className="live-dot"/>LIVE</div>}
-  </div>
-);}
-export default function FootballWidget() {
-  const [lg,sLg]=useState("liga1_ro");const [tb,sTb]=useState("live");const [d,sD]=useState(null);const [l,sL]=useState(true);
-  useEffect(()=>{sL(true);const f=tb==="standings"?api.get("/football/standings",{params:{league:lg}}):api.get("/football/matches",{params:{league:lg,type:tb}});f.then(r=>sD(r.data)).catch(()=>sD(null)).finally(()=>sL(false));},[lg,tb]);
-  return (
-    <div className="glass-card p-6 h-full flex flex-col">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-white/60 text-xs uppercase tracking-widest font-medium"><Trophy className="w-3.5 h-3.5"/>Fotbal</div>
-        {tb==="live" && <Radio className="w-3.5 h-3.5 text-emerald-400"/>}
-      </div>
-      <div className="mt-3 flex flex-wrap gap-1">{L.map(x=>{const a=lg===x.k;return <button key={x.k} onClick={()=>sLg(x.k)} className={`text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full font-semibold ${a?"bg-white text-black":"bg-white/5 text-white/50 hover:bg-white/10"}`}>{x.l}</button>;})}</div>
-      <div className="mt-3 flex gap-1.5">{T.map(x=>{const a=tb===x.k;return <button key={x.k} onClick={()=>sTb(x.k)} className={`text-xs px-3 py-1.5 rounded-full font-medium ${a?"bg-white text-black":"bg-white/10 text-white/60 hover:bg-white/15"}`}>{x.l}</button>;})}</div>
-      <div className="mt-4 max-h-[360px] overflow-y-auto subtle-scroll pr-1">
-        {l && <p className="text-white/40 text-sm">Se încarcă…</p>}
-        {!l && tb==="standings" && (!d?.table?.length?<p className="text-white/40 text-sm">Nu există clasament.</p>:
-          <table className="w-full text-xs"><thead className="text-white/40"><tr><th className="text-left py-1">#</th><th className="text-left">Echipă</th><th className="text-center">J</th><th className="text-center">GD</th><th className="text-right">P</th></tr></thead>
-          <tbody>{d.table.map((x,i)=><tr key={i} className="border-t border-white/5"><td className="py-1.5 text-white/60">{x.rank}</td><td className="text-white/90 truncate max-w-[120px]">{x.team}</td><td className="text-center text-white/70">{x.played}</td><td className="text-center text-white/70">{x.goal_diff>0?"+":""}{x.goal_diff}</td><td className="text-right text-white font-semibold">{x.points}</td></tr>)}</tbody></table>
-        )}
-        {!l && tb!=="standings" && (!d?.matches?.length?<p className="text-white/40 text-sm">{tb==="live"?"Nu sunt meciuri live acum.":"Nu există meciuri."}</p>:
-          d.matches.map(m=><R key={m.id} m={m} lv={tb==="live"}/>))}
-      </div>
-    </div>
-  );
-}
-EOF
+        function addT() {
+            const i = document.getElementById('tIn');
+            if(!i.value) return;
+            const d = document.createElement('div');
+            d.className = 'news';
+            d.innerHTML = `• ${i.value}`;
+            document.getElementById('tList').appendChild(d);
+            i.value = '';
+        }
 
-cat > frontend/src/widgets/QuoteWidget.jsx << 'EOF'
-import { useEffect, useState } from "react";
-import { api } from "../lib/api";
-import { Quote } from "lucide-react";
-export default function QuoteWidget() {
-  const [q,sQ]=useState(null);
-  useEffect(()=>{api.get("/quotes/today").then(r=>sQ(r.data)).catch(()=>sQ(null));},[]);
-  return (
-    <div className="glass-card p-8 md:p-10 relative overflow-hidden">
-      <Quote className="absolute -top-4 -left-4 w-40 h-40 text-white/[0.04]" strokeWidth={1.2}/>
-      <div className="relative z-10">
-        <p className="text-white/50 text-xs uppercase tracking-[0.25em] font-medium">Citatul zilei</p>
-        {q?<><p className="mt-3 font-heading font-light text-white/95 text-2xl md:text-3xl italic leading-snug max-w-4xl">„{q.q}"</p><p className="mt-3 text-white/60 text-sm">— {q.a}</p></>:<p className="text-white/40 mt-3 text-sm">Se încarcă…</p>}
-      </div>
-    </div>
-  );
-}
-EOF
+        // Widget Vreme
+        !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src='https://weatherwidget-io.com/widget.min.js';fjs.parentNode.insertBefore(js,fjs);}}(document,'script','weatherwidget-io-js');
+    </script>
+</body>
+</html>
