@@ -1,83 +1,242 @@
+```html
 <!DOCTYPE html>
 <html lang="ro">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Dashboard S25 Ultra</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600&display=swap" rel="stylesheet">
-    <style>
-        :root { --negru: #050505; --rosu: #CE1126; --galben: #FCD116; --albastru: #002B7F; }
-        body { background: var(--negru); color: white; font-family: 'Outfit', sans-serif; margin: 0; padding: 15px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; }
-        .card { background: #121212; border: 1px solid #222; border-radius: 24px; padding: 20px; position: relative; overflow: hidden; }
-        .accent-b { border-top: 4px solid var(--albastru); }
-        .accent-r { border-top: 4px solid var(--rosu); }
-        .accent-g { border-top: 4px solid var(--galben); }
-        h2 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; color: #555; margin-bottom: 15px; }
-        #ceas { font-size: 5rem; font-weight: 600; color: var(--galben); line-height: 1; }
-        #data { color: var(--albastru); font-size: 1.1rem; margin-bottom: 20px; }
-        input { background: #1a1a1a; border: 1px solid #333; color: white; padding: 12px; border-radius: 12px; width: 80%; margin-bottom: 10px; }
-        button { background: var(--albastru); border: none; color: white; padding: 10px 20px; border-radius: 12px; cursor: pointer; font-weight: 600; }
-        .match, .news { border-bottom: 1px solid #222; padding: 10px 0; font-size: 0.9rem; }
-        .live { color: var(--rosu); font-weight: bold; animation: blink 1s infinite; }
-        @keyframes blink { 50% { opacity: 0.5; } }
-    </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Dashboard Personal</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+body{margin:0;background:#040914;color:#fff;font-family:'Manrope',sans-serif;min-height:100vh;overflow-x:hidden}
+.fh{font-family:'Outfit',sans-serif}
+.gc{position:relative;overflow:hidden;background:rgba(255,255,255,.03);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);border:1px solid rgba(255,255,255,.1);border-radius:2rem;box-shadow:0 8px 32px rgba(0,0,0,.3);transition:.3s}
+.gc:hover{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.2)}
+.bg{position:fixed;inset:0;z-index:0;background:radial-gradient(ellipse at top,#1a1f3a 0%,#040914 70%);}
+.bg::after{content:'';position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1762529370608-77e3e376bac8?w=1920&q=80') center/cover;opacity:.4;mix-blend-mode:screen}
+.dot{width:8px;height:8px;border-radius:999px;background:#10B981;animation:lp 1.6s infinite}
+@keyframes lp{0%{box-shadow:0 0 0 0 rgba(16,185,129,.7)}70%{box-shadow:0 0 0 10px rgba(16,185,129,0)}100%{box-shadow:0 0 0 0 rgba(16,185,129,0)}}
+.ss::-webkit-scrollbar{width:6px}.ss::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:999px}
+@keyframes ri{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+.ri{animation:ri .7s cubic-bezier(.4,0,.2,1) both}
+.pill{padding:.35rem .8rem;border-radius:999px;font-size:.75rem;font-weight:500;transition:.2s;cursor:pointer;border:none}
+.pill-a{background:#fff;color:#000}
+.pill-i{background:rgba(255,255,255,.1);color:rgba(255,255,255,.6)}
+.pill-i:hover{background:rgba(255,255,255,.15)}
+.lpill{font-size:10px;text-transform:uppercase;letter-spacing:.05em;padding:.25rem .6rem;border-radius:999px;font-weight:600;cursor:pointer;border:none}
+.lpill-a{background:#fff;color:#000}
+.lpill-i{background:rgba(255,255,255,.05);color:rgba(255,255,255,.5)}
+.lpill-i:hover{background:rgba(255,255,255,.1)}
+input:focus{outline:none}
+</style>
 </head>
 <body>
+<div class="bg"></div>
+<div class="relative z-10 w-full min-h-screen p-4 md:p-8">
+<div class="mx-auto max-w-7xl grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6">
 
-    <div id="ceas">00:00</div>
-    <div id="data">Încarcare...</div>
+<div class="md:col-span-8 ri">
+<div class="gc p-6 md:p-10 h-full flex flex-col justify-center">
+<p class="text-white/60 text-sm uppercase tracking-[.25em]" id="greet">Bună</p>
+<div class="fh font-light tracking-tighter leading-none mt-2 text-white" style="font-size:clamp(4rem,12vw,10rem)"><span id="hh">--</span><span class="text-white/40">:</span><span id="mm">--</span><span class="text-emerald-400/70 text-4xl md:text-5xl align-top ml-2" id="ss">--</span></div>
+<p class="mt-2 text-white/80 text-lg md:text-2xl fh font-light" id="dt">...</p>
+</div>
+</div>
 
-    <div class="grid">
-        <div class="card accent-b">
-            <h2>Vremea Pantelimon</h2>
-            <a class="weatherwidget-io" href="https://forecast7.com/ro/44a4526a21/pantelimon/" data-label_1="PANTELIMON" data-theme="pure" data-basecolor="#121212" data-accent="var(--galben)" data-textcolor="#ffffff" >Vremea Pantelimon</a>
-        </div>
+<div class="md:col-span-4 ri">
+<div class="gc p-6 h-full flex flex-col">
+<div class="flex items-center justify-between">
+<div class="text-white/60 text-xs uppercase tracking-widest">📍 Vremea</div>
+<button onclick="toggleWS()" class="text-white/50 hover:text-white text-xs px-2 py-1 rounded-full hover:bg-white/10">🔍 Alege oraș</button>
+</div>
+<div id="ws" class="hidden mt-3 space-y-2">
+<div class="flex gap-2">
+<input id="wsi" placeholder="Caută oraș..." class="flex-1 bg-white/5 border border-white/10 rounded-full px-4 py-2 text-sm text-white placeholder-white/40 focus:border-white/30"/>
+<button onclick="searchCity()" class="bg-white text-black text-sm px-4 py-2 rounded-full font-medium">Caută</button>
+</div>
+<div class="flex flex-wrap gap-2">
+<button onclick="setCity('București',44.4268,26.1025)" class="text-xs px-3 py-1 rounded-full bg-white/5 hover:bg-white/15 text-white/80">București</button>
+<button onclick="setCity('Pantelimon',44.4497,26.2103)" class="text-xs px-3 py-1 rounded-full bg-white/5 hover:bg-white/15 text-white/80">Pantelimon</button>
+</div>
+<ul id="wsr" class="space-y-1 max-h-40 overflow-auto ss"></ul>
+</div>
+<div class="mt-4 flex items-start justify-between">
+<div><p class="text-white text-xl fh font-medium" id="wcity">București</p><p class="text-white/50 text-xs mt-0.5" id="wdesc">—</p></div>
+<div class="text-4xl" id="wico">☁️</div>
+</div>
+<div class="mt-2 flex items-end gap-3">
+<span class="fh font-light text-white text-6xl md:text-7xl leading-none" id="wtemp">--</span>
+<span class="text-white/60 text-2xl mb-2 fh">°C</span>
+</div>
+<div class="mt-2 flex gap-4 text-white/60 text-xs" id="wmeta"></div>
+<div class="mt-4 pt-4 border-t border-white/10 flex gap-3 overflow-x-auto ss" id="whourly"></div>
+</div>
+</div>
 
-        <div class="card accent-r">
-            <h2>Fotbal Live</h2>
-            <div id="scores">
-                <div class="match">Liga 1: FCSB - Rapid <span class="live">LIVE (1-1)</span></div>
-                <div class="match">Premier League: Man. City - Arsenal (22:00)</div>
-                <div class="match">La Liga: Real Madrid - Barca (Final 3-2)</div>
-            </div>
-        </div>
+<div class="md:col-span-4 ri">
+<div class="gc p-6 h-full flex flex-col">
+<div class="flex items-center justify-between">
+<div class="text-white/60 text-xs uppercase tracking-widest">✓ Task-uri</div>
+<span class="text-white/50 text-xs" id="tcount">0 de făcut</span>
+</div>
+<form onsubmit="addTask(event)" class="mt-4 flex gap-2">
+<input id="tinput" placeholder="Ce ai de făcut astăzi?" class="flex-1 bg-transparent border-b border-white/15 focus:border-white/50 text-white placeholder-white/40 py-2 text-sm"/>
+<button type="submit" class="bg-white text-black rounded-full w-9 h-9 flex items-center justify-center text-lg">+</button>
+</form>
+<ul id="tlist" class="mt-4 space-y-2 max-h-[320px] overflow-y-auto ss pr-1"></ul>
+</div>
+</div>
 
-        <div class="card accent-g">
-            <h2>Știri România</h2>
-            <div id="news-list">
-                <div class="news">Se încarcă cele mai noi știri de pe Digi24...</div>
-            </div>
-        </div>
+<div class="md:col-span-4 ri">
+<div class="gc p-6 h-full flex flex-col">
+<div class="text-white/60 text-xs uppercase tracking-widest">📰 Știri</div>
+<div class="mt-3 flex flex-wrap gap-1.5" id="ntabs"></div>
+<ul id="nlist" class="mt-4 space-y-3 max-h-[360px] overflow-y-auto ss pr-1"></ul>
+</div>
+</div>
 
-        <div class="card">
-            <h2>Task-uri</h2>
-            <input type="text" id="tIn" placeholder="Adaugă task...">
-            <button onclick="addT()">+</button>
-            <div id="tList"></div>
-        </div>
-    </div>
+<div class="md:col-span-4 ri">
+<div class="gc p-6 h-full flex flex-col">
+<div class="text-white/60 text-xs uppercase tracking-widest">🏆 Fotbal</div>
+<div class="mt-3 flex flex-wrap gap-1" id="flgs"></div>
+<div class="mt-3 flex gap-1.5" id="ftabs"></div>
+<div class="mt-4 max-h-[360px] overflow-y-auto ss pr-1" id="fbody"></div>
+</div>
+</div>
 
-    <script>
-        function update() {
-            const n = new Date();
-            document.getElementById('ceas').innerText = n.toLocaleTimeString('ro-RO', {hour: '2-digit', minute:'2-digit'});
-            document.getElementById('data').innerText = n.toLocaleDateString('ro-RO', {weekday:'long', day:'numeric', month:'long'});
-        }
-        setInterval(update, 1000); update();
+<div class="md:col-span-12 ri">
+<div class="gc p-8 md:p-10 relative overflow-hidden">
+<div class="absolute -top-4 -left-4 text-[10rem] text-white/[0.04] leading-none">"</div>
+<div class="relative z-10">
+<p class="text-white/50 text-xs uppercase tracking-[.25em]">Citatul zilei</p>
+<p class="mt-3 fh font-light text-white/95 text-2xl md:text-3xl italic leading-snug max-w-4xl" id="qtext">...</p>
+<p class="mt-3 text-white/60 text-sm" id="qauthor"></p>
+</div>
+</div>
+</div>
 
-        function addT() {
-            const i = document.getElementById('tIn');
-            if(!i.value) return;
-            const d = document.createElement('div');
-            d.className = 'news';
-            d.innerHTML = `• ${i.value}`;
-            document.getElementById('tList').appendChild(d);
-            i.value = '';
-        }
+</div>
+<p class="mx-auto max-w-7xl mt-8 text-center text-white/40 text-xs">Date: wttr.in · Open-Meteo · TheSportsDB · Digi24/GSP/Cancan</p>
+</div>
 
-        // Widget Vreme
-        !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src='https://weatherwidget-io.com/widget.min.js';fjs.parentNode.insertBefore(js,fjs);}}(document,'script','weatherwidget-io-js');
-    </script>
+<script>
+// ========== CLOCK ==========
+const W=["Duminică","Luni","Marți","Miercuri","Joi","Vineri","Sâmbătă"];
+const M=["Ianuarie","Februarie","Martie","Aprilie","Mai","Iunie","Iulie","August","Septembrie","Octombrie","Noiembrie","Decembrie"];
+function tick(){
+  const n=new Date();
+  hh.textContent=String(n.getHours()).padStart(2,'0');
+  mm.textContent=String(n.getMinutes()).padStart(2,'0');
+  ss.textContent=String(n.getSeconds()).padStart(2,'0');
+  const h=n.getHours();
+  greet.textContent=h<5?"Noapte bună":h<12?"Bună dimineața":h<18?"Bună ziua":h<22?"Bună seara":"Noapte bună";
+  dt.textContent=`${W[n.getDay()]}, ${n.getDate()} ${M[n.getMonth()]} ${n.getFullYear()}`;
+}
+setInterval(tick,1000);tick();
+
+// ========== WEATHER ==========
+const WICO={0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',51:'🌦️',53:'🌦️',55:'🌦️',61:'🌧️',63:'🌧️',65:'🌧️',71:'🌨️',73:'🌨️',75:'❄️',80:'🌧️',81:'🌧️',82:'⛈️',95:'⛈️',96:'⛈️',99:'⛈️'};
+const W2W={"113":0,"116":2,"119":3,"122":3,"143":45,"176":51,"179":71,"200":95,"227":71,"248":48,"263":51,"266":51,"281":56,"293":61,"296":61,"299":63,"302":63,"305":65,"308":65,"311":66,"314":67,"323":71,"326":73,"329":73,"332":75,"335":75,"353":80,"356":81,"359":82,"386":95,"389":96,"395":99};
+const WDESC={0:'Senin',1:'Senin',2:'Parțial noros',3:'Noros',45:'Ceață',48:'Ceață',51:'Burniță',61:'Ploaie',63:'Ploaie',65:'Ploaie',71:'Ninsoare',75:'Ninsoare',80:'Ploaie',95:'Furtună'};
+let city=JSON.parse(localStorage.getItem('dc')||'null')||{name:'București',lat:44.4268,lon:26.1025};
+function toggleWS(){ws.classList.toggle('hidden')}
+function setCity(n,lat,lon){city={name:n,lat:lat,lon:lon};localStorage.setItem('dc',JSON.stringify(city));ws.classList.add('hidden');wsr.innerHTML='';loadWeather()}
+async function searchCity(){
+  const q=wsi.value.trim();if(!q)return;
+  try{const r=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=5&language=ro`);const d=await r.json();
+    wsr.innerHTML=(d.results||[]).map(x=>`<li><button onclick="setCity('${x.name.replace(/'/g,"")}',${x.latitude},${x.longitude})" class="w-full text-left text-sm px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10">${x.name} <span class="text-white/40">· ${x.admin1||''} ${x.country}</span></button></li>`).join('');
+  }catch(e){wsr.innerHTML='<li class="text-white/40 text-sm">Eroare</li>'}
+}
+async function loadWeather(){
+  wcity.textContent=city.name;
+  try{
+    const r=await fetch(`https://wttr.in/${city.lat},${city.lon}?format=j1`);const d=await r.json();
+    const cc=d.current_condition[0];const code=W2W[cc.weatherCode]||3;
+    wtemp.textContent=Math.round(cc.temp_C);wico.textContent=WICO[code]||'☁️';wdesc.textContent=WDESC[code]||cc.weatherDesc[0].value;
+    wmeta.innerHTML=`<span>💧 ${cc.humidity}%</span><span>💨 ${Math.round(cc.windspeedKmph)} km/h</span><span>Resimțit ${Math.round(cc.FeelsLikeC)}°</span>`;
+    const now=new Date();const nh=now.getHours();const today=now.toISOString().slice(0,10);
+    const hours=[];
+    for(const day of d.weather.slice(0,2)){
+      for(const h of day.hourly){
+        const hi=parseInt(h.time)/100;
+        if(day.date>today||(day.date===today&&hi>=nh))hours.push({t:`${String(hi).padStart(2,'0')}:00`,tp:Math.round(h.tempC),c:W2W[h.weatherCode]||3});
+        if(hours.length>=8)break;
+      }
+      if(hours.length>=8)break;
+    }
+    whourly.innerHTML=hours.map(h=>`<div class="flex flex-col items-center gap-1 min-w-[48px]"><span class="text-white/40 text-[10px]">${h.t}</span><span class="text-lg">${WICO[h.c]||'☁️'}</span><span class="text-white text-sm font-medium">${h.tp}°</span></div>`).join('');
+  }catch(e){wtemp.textContent='--';wdesc.textContent='Eroare'}
+}
+loadWeather();setInterval(loadWeather,600000);
+
+// ========== TASKS (localStorage) ==========
+let tasks=JSON.parse(localStorage.getItem('dt')||'[]');
+function saveT(){localStorage.setItem('dt',JSON.stringify(tasks));renderT()}
+function renderT(){
+  const rem=tasks.filter(t=>!t.done).length;tcount.textContent=`${rem} de făcut · ${tasks.length} total`;
+  tlist.innerHTML=tasks.length?tasks.map(t=>`<li class="group flex items-center gap-3 p-2 rounded-xl hover:bg-white/5"><button onclick="toggleT('${t.id}')" class="shrink-0 w-5 h-5 rounded-full border flex items-center justify-center ${t.done?'bg-emerald-500 border-emerald-500 text-white':'border-white/30'}">${t.done?'✓':''}</button><span class="flex-1 text-sm ${t.done?'line-through text-white/40':'text-white/90'}">${t.text.replace(/</g,'&lt;')}</span><button onclick="delT('${t.id}')" class="text-white/40 hover:text-red-400">🗑</button></li>`).join(''):'<li class="text-white/40 text-sm">Nicio sarcină. Adaugă una ↑</li>';
+}
+function addTask(e){e.preventDefault();const v=tinput.value.trim();if(!v)return;tasks.unshift({id:Date.now()+'',text:v,done:false});tinput.value='';saveT()}
+function toggleT(id){const t=tasks.find(x=>x.id===id);if(t){t.done=!t.done;saveT()}}
+function delT(id){tasks=tasks.filter(x=>x.id!==id);saveT()}
+renderT();
+
+// ========== NEWS (RSS via rss2json) ==========
+const NCATS=[{k:'generale',l:'Generale',u:'https://www.digi24.ro/rss'},{k:'sport',l:'Sport',u:'https://www.gsp.ro/rss/index.xml'},{k:'politica',l:'Politică',u:'https://www.digi24.ro/rss/politica'},{k:'showbiz',l:'Showbiz',u:'https://www.cancan.ro/feed'}];
+let ncat='generale';
+function renderNTabs(){ntabs.innerHTML=NCATS.map(c=>`<button onclick="setNCat('${c.k}')" class="pill ${c.k===ncat?'pill-a':'pill-i'}">${c.l}</button>`).join('')}
+function setNCat(k){ncat=k;renderNTabs();loadNews()}
+async function loadNews(){
+  nlist.innerHTML='<li class="text-white/40 text-sm">Se încarcă…</li>';
+  const cat=NCATS.find(c=>c.k===ncat);
+  try{
+    const r=await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(cat.u)}`);const d=await r.json();
+    nlist.innerHTML=(d.items||[]).slice(0,15).map(n=>`<li><a href="${n.link}" target="_blank" class="group block"><p class="text-white/90 text-sm group-hover:text-white">${n.title} <span class="text-white/30">↗</span></p><p class="text-white/40 text-[11px] mt-0.5">${d.feed.title||''}</p></a></li>`).join('')||'<li class="text-white/40 text-sm">Nicio știre.</li>';
+  }catch(e){nlist.innerHTML='<li class="text-white/40 text-sm">Eroare la încărcare.</li>'}
+}
+renderNTabs();loadNews();
+
+// ========== FOOTBALL (TheSportsDB) ==========
+const LGS=[{k:'liga1_ro',l:'Liga 1 RO',id:'4691'},{k:'premier_league',l:'Premier L.',id:'4328'},{k:'la_liga',l:'La Liga',id:'4335'},{k:'serie_a',l:'Serie A',id:'4332'},{k:'bundesliga',l:'Bundesliga',id:'4331'},{k:'ligue_1',l:'Ligue 1',id:'4334'}];
+const FTABS=[{k:'live',l:'Live'},{k:'past',l:'Rezultate'},{k:'standings',l:'Clasament'}];
+let flg='liga1_ro',ftb='past';
+function renderFTabs(){
+  flgs.innerHTML=LGS.map(l=>`<button onclick="setFLg('${l.k}')" class="lpill ${l.k===flg?'lpill-a':'lpill-i'}">${l.l}</button>`).join('');
+  ftabs.innerHTML=FTABS.map(t=>`<button onclick="setFTb('${t.k}')" class="pill ${t.k===ftb?'pill-a':'pill-i'}">${t.l}</button>`).join('');
+}
+function setFLg(k){flg=k;renderFTabs();loadFootball()}
+function setFTb(k){ftb=k;renderFTabs();loadFootball()}
+async function tsdb(p){const r=await fetch(`https://www.thesportsdb.com/api/v1/json/3${p}`);return r.json()}
+async function loadFootball(){
+  fbody.innerHTML='<p class="text-white/40 text-sm">Se încarcă…</p>';
+  const L=LGS.find(x=>x.k===flg);
+  try{
+    if(ftb==='standings'){
+      let d=await tsdb(`/lookuptable.php?l=${L.id}&s=2025-2026`);if(!d.table||!d.table.length)d=await tsdb(`/lookuptable.php?l=${L.id}&s=2024-2025`);
+      const t=d.table||[];
+      fbody.innerHTML=t.length?`<table class="w-full text-xs"><thead class="text-white/40"><tr><th class="text-left py-1">#</th><th class="text-left">Echipă</th><th class="text-center">J</th><th class="text-center">GD</th><th class="text-right">P</th></tr></thead><tbody>${t.map(r=>`<tr class="border-t border-white/5"><td class="py-1.5 text-white/60">${r.intRank}</td><td class="text-white/90 truncate max-w-[120px]">${r.strTeam}</td><td class="text-center text-white/70">${r.intPlayed}</td><td class="text-center text-white/70">${r.intGoalDifference>0?'+':''}${r.intGoalDifference}</td><td class="text-right text-white font-semibold">${r.intPoints}</td></tr>`).join('')}</tbody></table>`:'<p class="text-white/40 text-sm">Nu există clasament.</p>';
+    }else{
+      let d=await tsdb(`/eventsseason.php?id=${L.id}&s=2025-2026`);if(!d.events)d=await tsdb(`/eventsseason.php?id=${L.id}&s=2024-2025`);
+      const ev=d.events||[];const today=new Date().toISOString().slice(0,10);
+      const hs=e=>e.intHomeScore!=null&&e.intAwayScore!=null;
+      let sel=[];
+      if(ftb==='past'){sel=ev.filter(hs).sort((a,b)=>(b.dateEvent||'').localeCompare(a.dateEvent||'')).slice(0,20)}
+      else{sel=ev.filter(e=>e.dateEvent===today);if(!sel.length){const ls=await tsdb(`/livescore.php?l=${L.id}`);sel=ls.events||[]}}
+      fbody.innerHTML=sel.length?sel.map(m=>{const s=hs(m);return `<div class="flex items-center justify-between gap-2 py-2 border-b border-white/5"><div class="flex-1 min-w-0"><p class="text-white/90 text-sm truncate">${m.strHomeTeam}</p><p class="text-white/90 text-sm truncate">${m.strAwayTeam}</p></div><div class="text-right">${s?`<div class="text-white fh font-medium leading-tight"><div>${m.intHomeScore}</div><div>${m.intAwayScore}</div></div>`:`<div class="text-white/50 text-xs leading-tight"><div>${(m.dateEvent||'').slice(5)||'--'}</div><div>${(m.strTime||'').slice(0,5)||'--:--'}</div></div>`}</div>${ftb==='live'?'<div class="flex items-center gap-1 text-emerald-400 text-[10px] uppercase"><span class="dot"></span>LIVE</div>':''}</div>`}).join(''):`<p class="text-white/40 text-sm">${ftb==='live'?'Nu sunt meciuri live acum.':'Nu există meciuri.'}</p>`;
+    }
+  }catch(e){fbody.innerHTML='<p class="text-white/40 text-sm">Eroare la încărcare.</p>'}
+}
+renderFTabs();loadFootball();
+
+// ========== QUOTE ==========
+const QS=[{q:"Singurul mod de a face o treabă grozavă este să iubești ceea ce faci.",a:"Steve Jobs"},{q:"Nu aștepta. Timpul nu va fi niciodată potrivit.",a:"Napoleon Hill"},{q:"Călătoria de o mie de mile începe cu un singur pas.",a:"Lao Tzu"},{q:"Viața este ceea ce ți se întâmplă în timp ce îți faci alte planuri.",a:"John Lennon"},{q:"Fii tu însuți; toți ceilalți sunt deja ocupați.",a:"Oscar Wilde"},{q:"Cel mai bun moment să plantezi un copac a fost acum 20 de ani. Al doilea cel mai bun moment este acum.",a:"Proverb chinezesc"},{q:"Succesul nu e final, eșecul nu e fatal: curajul de a continua contează.",a:"Winston Churchill"},{q:"Fii schimbarea pe care vrei să o vezi în lume.",a:"Mahatma Gandhi"},{q:"Dacă poți să visezi, poți să o faci.",a:"Walt Disney"},{q:"Nu judeca fiecare zi după recolta pe care o strângi, ci după semințele pe care le plantezi.",a:"R. L. Stevenson"},{q:"Mintea este totul. Ceea ce gândești, aceea devii.",a:"Buddha"},{q:"Nu număra zilele, fă ca zilele să conteze.",a:"Muhammad Ali"},{q:"Perfecțiunea nu e atinsă când nu mai ai nimic de adăugat, ci când nu mai ai nimic de îndepărtat.",a:"A. de Saint-Exupéry"},{q:"Dacă vrei să mergi repede, mergi singur. Dacă vrei să ajungi departe, mergi împreună.",a:"Proverb african"}];
+const ts=new Date().toISOString().slice(0,10);let h=0;for(const c of ts)h=(h*31+c.charCodeAt(0))>>>0;
+const qq=QS[h%QS.length];qtext.textContent=`„${qq.q}"`;qauthor.textContent=`— ${qq.a}`;
+</script>
 </body>
 </html>
+```
+
+
+
+
